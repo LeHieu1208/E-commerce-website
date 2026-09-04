@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Danh sách yêu thích - Shopmart</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <style>
+    :root { --coral:#D85A30; --coral-light:#FAECE7; --coral-dark:#4A1B0C; --surface-0:#F7F5F1; --surface-1:#FFFFFF; --border:#E8E4DC; --text-primary:#1F1D1A; --text-secondary:#6B6862; --text-muted:#9B968D; --radius:8px; }
+    *{box-sizing:border-box;margin:0;padding:0;} body{font-family:'Segoe UI',sans-serif;background:var(--surface-0);color:var(--text-primary);} a{text-decoration:none;color:inherit;} .container{max-width:1100px;margin:0 auto;padding:24px 20px;} header{background:var(--surface-1);border-bottom:1px solid var(--border);} .header-inner{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;max-width:1100px;margin:0 auto;} .logo{font-size:20px;font-weight:700;color:var(--coral);} .page-title{font-size:24px;font-weight:700;margin-bottom:16px;} .card{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--radius);padding:20px;} .empty-state{text-align:center;color:var(--text-muted);padding:40px 0;} .wishlist-item{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--border);} .wishlist-item:last-child{border-bottom:none;} .item-info{display:flex;flex-direction:column;gap:4px;} .item-title{font-weight:600;} .item-meta{font-size:13px;color:var(--text-secondary);} .btn{display:inline-block;padding:8px 12px;border-radius:var(--radius);font-size:13px;font-weight:600;border:none;cursor:pointer;} .btn-primary{background:var(--coral);color:#fff;} .btn-secondary{background:var(--surface-0);border:1px solid var(--border);color:var(--text-primary);} .actions{display:flex;gap:8px;align-items:center;}
+  </style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <a th:href="@{/}" class="logo">Shopmart</a>
+    <a th:href="@{/cart}" class="btn btn-secondary">Giỏ hàng</a>
+  </div>
+</header>
+<div class="container">
+  <h1 class="page-title">Danh sách yêu thích</h1>
+  <div class="card" th:if="${#lists.isEmpty(wishlistItems)}">
+    <p class="empty-state">Bạn chưa có sản phẩm nào trong danh sách yêu thích.</p>
+  </div>
+  <div class="card" th:unless="${#lists.isEmpty(wishlistItems)}">
+    <div class="wishlist-item" th:each="item : ${wishlistItems}">
+      <div class="item-info">
+        <a class="item-title" th:href="@{/products/{id}(id=${item.product.id})}" th:text="${item.product.name}">Tên sản phẩm</a>
+        <div class="item-meta" th:text="${item.product.description != null ? #strings.abbreviate(item.product.description, 80) : 'Sản phẩm yêu thích'}"></div>
+      </div>
+      <div class="actions">
+        <a class="btn btn-primary" th:href="@{/products/{id}(id=${item.product.id})}">Xem chi tiết</a>
+        <form th:action="@{/wishlist/remove}" method="post">
+          <input type="hidden" name="productId" th:value="${item.product.id}">
+          <button class="btn btn-secondary" type="submit">Xóa</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quản trị - Banner quảng cáo</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  :root { --coral: #D85A30; --coral-light: #FAECE7; --coral-dark: #4A1B0C; --amber: #EF9F27; --text-primary: #1F1D1A; --text-secondary: #6B6862; --text-muted: #9B968D; --surface-0: #F7F5F1; --surface-1: #FFFFFF; --border: #E8E4DC; --border-strong: #D6D1C6; --radius: 8px; --sidebar-bg: #211D19; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--surface-0); color: var(--text-primary); line-height: 1.5; }
+  a { text-decoration: none; color: inherit; }
+  .admin-wrap { display: flex; min-height: 100vh; }
+  .sidebar { width: 232px; flex-shrink: 0; background: var(--sidebar-bg); color: #D8D3C9; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+  .sidebar .brand { padding: 20px; font-size: 18px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .sidebar .brand i { color: var(--coral); font-size: 22px; }
+  .sidebar nav { padding: 12px 0; }
+  .sidebar nav a { display: flex; align-items: center; gap: 10px; padding: 11px 20px; font-size: 14px; color: #B8B2A6; border-left: 3px solid transparent; }
+  .sidebar nav a i { font-size: 18px; width: 18px; }
+  .sidebar nav a:hover { background: rgba(255,255,255,0.05); color: #fff; }
+  .sidebar nav a.active { background: rgba(216,90,48,0.16); color: #fff; border-left-color: var(--coral); font-weight: 600; }
+  .sidebar .divider { height: 1px; background: rgba(255,255,255,0.08); margin: 10px 20px; }
+  .sidebar .back-link { display: block; padding: 12px 20px; font-size: 13px; color: #9B958A; }
+  .sidebar .back-link:hover { color: #fff; }
+  .main { flex: 1; min-width: 0; }
+  .topbar { background: var(--surface-1); border-bottom: 1px solid var(--border); padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+  .topbar h1 { font-size: 19px; font-weight: 700; }
+  .topbar .admin-name { font-size: 13px; color: var(--text-secondary); }
+  .content { padding: 26px 28px 60px; max-width: 1200px; }
+  .flash { background: #DEF7E3; color: #1B8A3B; border: 1px solid #B9E9C4; padding: 10px 16px; border-radius: var(--radius); margin-bottom: 18px; font-size: 14px; }
+  .panel { background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; }
+  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  .toolbar .hint-text { font-size: 13px; color: var(--text-secondary); }
+  .btn-add { padding: 10px 18px; background: var(--coral); color: #fff; border: none; border-radius: var(--radius); font-size: 13.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .banner-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .banner-card { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--surface-1); }
+  .banner-card img { width: 100%; height: 130px; object-fit: cover; display: block; background: var(--surface-0); }
+  .banner-card .body { padding: 12px 14px; }
+  .banner-card .title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .banner-card .link { font-size: 12px; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 10px; }
+  .banner-card .actions { display: flex; gap: 12px; }
+  .banner-card .actions a, .banner-card .actions button { font-size: 12.5px; color: var(--coral); background: none; border: none; cursor: pointer; padding: 0; font-family: inherit; }
+  .banner-card .actions .del-btn { color: #C23B2B; }
+  .empty-note { color: var(--text-muted); font-size: 13.5px; padding: 20px 0; text-align: center; }
+  .back-btn { font-size: 13px; color: var(--text-secondary); margin-bottom: 14px; display:inline-block; }
+  label { display:block; font-size: 12.5px; color: var(--text-secondary); margin-bottom: 5px; margin-top: 14px; }
+  label:first-of-type { margin-top: 0; }
+  input, select { width: 100%; padding: 10px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius); font-size: 13.5px; font-family: inherit; }
+  .btn-save { margin-top: 22px; width: 100%; padding: 12px; background: var(--coral); color: #fff; border: none; border-radius: var(--radius); font-size: 14px; font-weight: 700; cursor: pointer; }
+  .btn-save:hover { background: var(--coral-dark); }
+  .preview { margin-top: 14px; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); background: var(--surface-0); min-height: 60px; }
+  .preview img { width: 100%; max-height: 200px; object-fit: cover; display: block; }
+</style>
+</head>
+<body>
+<div class="admin-wrap">
+  <aside class="sidebar">
+    <div class="brand"><i class="ti ti-shopping-bag"></i> Shopmart Admin</div>
+    <nav>
+      <a th:href="@{/admin}"><i class="ti ti-layout-dashboard"></i> Tổng quan</a>
+      <a th:href="@{/admin/orders}"><i class="ti ti-receipt"></i> Đơn hàng</a>
+      <a th:href="@{/admin/products}"><i class="ti ti-package"></i> Sản phẩm</a>
+      <a th:href="@{/admin/categories}"><i class="ti ti-category"></i> Danh mục</a>
+      <a th:href="@{/admin/banners}" class="active"><i class="ti ti-ad-2"></i> Quảng cáo</a>
+      <a th:href="@{/admin/revenue}"><i class="ti ti-chart-line"></i> Doanh thu</a>
+    </nav>
+    <div class="divider"></div>
+    <a th:href="@{/}" class="back-link"><i class="ti ti-arrow-left"></i> Về trang bán hàng</a>
+    <a th:href="@{/logout}" class="back-link"><i class="ti ti-logout"></i> Đăng xuất</a>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <h1>Banner quảng cáo</h1>
+      <div class="admin-name">Xin chào, <strong th:text="${currentUser != null and currentUser.fullName != null ? currentUser.fullName : (currentUser != null ? currentUser.email : 'admin')}">admin</strong></div>
+    </div>
+
+    <div class="content">
+      <div class="flash" th:if="${message}" th:text="${message}"></div>
+
+      <div th:if="${banner == null}">
+        <div class="panel">
+          <div class="toolbar">
+            <div class="hint-text">Các banner sẽ tự động chuyển đổi mỗi 4 giây ở trang chủ, theo đúng thứ tự bên dưới.</div>
+            <a th:href="@{/admin/banners/new}" class="btn-add"><i class="ti ti-plus"></i> Thêm banner</a>
+          </div>
+
+          <div class="banner-grid" th:if="${!banners.isEmpty()}">
+            <div class="banner-card" th:each="b : ${banners}">
+              <img th:src="${b.imageUrl}" th:alt="${b.title}">
+              <div class="body">
+                <div class="title" th:text="${b.title}">Tiêu đề banner</div>
+                <div class="link" th:text="${b.link}">/products?categoryId=1</div>
+                <div class="actions">
+                  <a th:href="@{/admin/banners/{id}/edit(id=${b.id})}">Sửa</a>
+                  <form method="post" th:action="@{/admin/banners/{id}/delete(id=${b.id})}" onsubmit="return confirm('Xóa banner này?');" style="display:inline;">
+                    <button type="submit" class="del-btn">Xóa</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="empty-note" th:if="${banners.isEmpty()}">Chưa có banner nào. Trang chủ sẽ hiển thị banner mặc định.</p>
+        </div>
+      </div>
+
+      <div th:if="${banner != null}">
+        <a class="back-btn" th:href="@{/admin/banners}">&larr; Quay lại danh sách banner</a>
+        <div class="panel">
+          <form method="post" th:action="${isEdit} ? @{/admin/banners/{id}(id=${banner.id})} : @{/admin/banners}">
+            <label>Tiêu đề banner</label>
+            <input type="text" name="title" th:value="${banner.title}" required>
+
+            <label>Link điều hướng</label>
+            <input type="text" name="link" id="linkInput" th:value="${banner.link}" placeholder="/products?categoryId=1" required>
+
+            <label>URL ảnh</label>
+            <input type="text" name="imageUrl" id="imageInput" th:value="${banner.imageUrl}" placeholder="https://..." required>
+            <div class="preview" th:if="${banner.imageUrl != null and !banner.imageUrl.isBlank()}">
+              <img th:src="${banner.imageUrl}" alt="Preview">
+            </div>
+
+            <button class="btn-save" type="submit" th:text="${isEdit} ? 'Lưu thay đổi' : 'Thêm banner'">Lưu</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

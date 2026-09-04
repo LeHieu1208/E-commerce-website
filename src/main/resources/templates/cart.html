@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Giỏ hàng - Shopmart</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  :root {
+    --coral: #D85A30;
+    --coral-light: #FAECE7;
+    --coral-dark: #4A1B0C;
+    --amber: #EF9F27;
+    --text-primary: #1F1D1A;
+    --text-secondary: #6B6862;
+    --text-muted: #9B968D;
+    --surface-0: #F7F5F1;
+    --surface-1: #FFFFFF;
+    --border: #E8E4DC;
+    --border-strong: #D6D1C6;
+    --radius: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--surface-0);
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+
+  a { text-decoration: none; color: inherit; }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+
+  /* ---------- Header (giống main.html) ---------- */
+  header {
+    background: var(--surface-1);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    gap: 20px;
+  }
+
+  .logo { font-size: 20px; font-weight: 700; color: var(--coral); white-space: nowrap; }
+
+  .search-box {
+    flex: 1;
+    max-width: 480px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface-0);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 14px;
+  }
+
+  .search-box i { color: var(--text-muted); font-size: 16px; }
+  .search-box input { border: none; background: transparent; outline: none; font-size: 14px; width: 100%; color: var(--text-primary); }
+
+  .header-icons { display: flex; align-items: center; gap: 20px; }
+  .icon-btn { position: relative; font-size: 20px; color: var(--text-secondary); display: flex; }
+  .icon-btn:hover { color: var(--coral); }
+
+  .badge {
+    position: absolute; top: -6px; right: -8px;
+    background: var(--coral); color: #fff;
+    font-size: 10px; font-weight: 700;
+    min-width: 16px; height: 16px; border-radius: 999px;
+    display: flex; align-items: center; justify-content: center; padding: 0 3px;
+  }
+
+  .flash-message {
+    margin-top: 16px;
+    background: var(--coral-dark);
+    color: #fff;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .page-title { font-size: 22px; font-weight: 700; margin: 24px 0 20px; }
+
+  /* ---------- Cart layout ---------- */
+  .cart-layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 24px;
+    align-items: start;
+    margin-bottom: 48px;
+  }
+
+  .cart-items {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .cart-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .cart-item:last-child { border-bottom: none; }
+
+  .cart-item-image {
+    width: 72px;
+    height: 72px;
+    background: var(--surface-0);
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .cart-item-image i { font-size: 28px; color: var(--text-muted); }
+
+  .cart-item-details { flex: 1; min-width: 0; }
+
+  .cart-item-name {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    display: block;
+  }
+
+  .cart-item-price { font-size: 13px; color: var(--text-secondary); }
+
+  .cart-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .qty-form { display: flex; align-items: center; gap: 6px; margin: 0; }
+
+  .qty-input {
+    width: 56px;
+    padding: 7px 8px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    font-size: 13px;
+    text-align: center;
+  }
+
+  .btn-update {
+    background: var(--surface-0);
+    border: 1px solid var(--border-strong);
+    color: var(--text-primary);
+    padding: 7px 12px;
+    border-radius: var(--radius);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .btn-update:hover { border-color: var(--coral); color: var(--coral); }
+
+  .cart-item-subtotal {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--coral-dark);
+    width: 100px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .btn-remove {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+  }
+
+  .btn-remove:hover { color: var(--coral); }
+
+  .remove-form { margin: 0; }
+
+  /* ---------- Summary ---------- */
+  .cart-summary {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: sticky;
+    top: 90px;
+  }
+
+  .cart-summary h2 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+  }
+
+  .summary-row.total {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    padding-top: 12px;
+    margin-top: 6px;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn-checkout {
+    width: 100%;
+    background: var(--coral);
+    color: #fff;
+    border: none;
+    padding: 13px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 16px;
+  }
+
+  .btn-checkout:hover { background: #C24E27; }
+
+  /* ---------- Empty state ---------- */
+  .empty-cart {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    text-align: center;
+    padding: 60px 20px;
+    margin-bottom: 48px;
+  }
+
+  .empty-cart i { font-size: 48px; color: var(--text-muted); margin-bottom: 16px; }
+  .empty-cart p { color: var(--text-secondary); font-size: 14px; margin-bottom: 20px; }
+
+  .btn-primary {
+    display: inline-block;
+    background: var(--coral);
+    color: #fff;
+    border: none;
+    padding: 11px 22px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .btn-primary:hover { background: #C24E27; }
+
+  @media (max-width: 700px) {
+    .cart-layout { grid-template-columns: 1fr; }
+    .search-box { display: none; }
+    .cart-item { flex-wrap: wrap; }
+    .cart-item-subtotal { text-align: left; width: auto; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a th:href="@{/}" class="logo">Shopmart</a>
+
+    <form class="search-box" th:action="@{/products}" method="get">
+      <i class="ti ti-search"></i>
+      <input type="text" name="keyword" placeholder="Tìm sản phẩm...">
+    </form>
+
+    <div class="header-icons">
+      <a th:href="@{/wishlist}" class="icon-btn" aria-label="Yêu thích"><i class="ti ti-heart"></i></a>
+      <a th:href="@{/cart}" class="icon-btn" aria-label="Giỏ hàng">
+        <i class="ti ti-shopping-cart"></i>
+        <span class="badge" th:text="${cartCount != null} ? ${cartCount} : 0">0</span>
+      </a>
+      <a th:href="@{/profile}" class="icon-btn" aria-label="Thông tin"><i class="ti ti-id"></i></a>
+    </div>
+  </div>
+</header>
+
+<div class="container" th:if="${message}">
+  <div class="flash-message">
+    <i class="ti ti-check"></i>
+    <span th:text="${message}"></span>
+  </div>
+</div>
+
+<main class="container">
+  <h1 class="page-title">Giỏ hàng của bạn</h1>
+
+  <!-- Trường hợp giỏ hàng có sản phẩm -->
+  <div class="cart-layout" th:if="${cartItems != null and !#lists.isEmpty(cartItems)}">
+
+    <div class="cart-items">
+      <div class="cart-item" th:each="item : ${cartItems}">
+        <div class="cart-item-image">
+          <img th:if="${item.product != null and item.product.imageUrl != null and !#strings.isEmpty(item.product.imageUrl)}"
+               th:src="${item.product.imageUrl}"
+               th:alt="${item.product.name}"
+               style="width: 80px; height: 80px; object-fit: cover; border-radius: 12px;">
+          <i th:unless="${item.product != null and item.product.imageUrl != null and !#strings.isEmpty(item.product.imageUrl)}"
+             class="ti" th:classappend="${item.product != null ? item.product.icon : 'ti-shopping-bag'}"></i>
+        </div>
+
+        <div class="cart-item-details">
+          <a th:href="@{/products/{id}(id=${item.product.id})}">
+            <span class="cart-item-name" th:text="${item.product.name}">Tên sản phẩm</span>
+          </a>
+          <span class="cart-item-price"
+                th:text="${#numbers.formatDecimal(item.product.price, 0, 'COMMA', 0, 'POINT')} + 'đ / sản phẩm'">0đ</span>
+        </div>
+
+        <div class="cart-item-actions">
+          <form th:action="@{/cart/update}" method="post" class="qty-form">
+            <input type="hidden" name="productId" th:value="${item.product.id}">
+            <input type="number" name="quantity" th:value="${item.quantity}" min="1" class="qty-input">
+          </form>
+
+          <form th:action="@{/cart/remove}" method="post" class="remove-form">
+            <input type="hidden" name="productId" th:value="${item.product.id}">
+            <button type="submit" class="btn-remove" aria-label="Xóa sản phẩm">
+              <i class="ti ti-trash"></i>
+            </button>
+          </form>
+        </div>
+
+        <div class="cart-item-subtotal"
+             th:text="${#numbers.formatDecimal(item.product.price * item.quantity, 0, 'COMMA', 0, 'POINT')} + 'đ'">
+          0đ
+        </div>
+      </div>
+    </div>
+
+    <aside class="cart-summary">
+      <h2>Tóm tắt đơn hàng</h2>
+      <div class="summary-row">
+        <span>Tạm tính</span>
+        <span th:text="${#numbers.formatDecimal(cartSubtotal, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</span>
+      </div>
+      <div class="summary-row">
+        <span>Phí vận chuyển</span>
+        <span>Tính ở bước sau</span>
+      </div>
+      <div class="summary-row total">
+        <span>Tổng cộng</span>
+        <span th:text="${#numbers.formatDecimal(cartSubtotal, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</span>
+      </div>
+
+      <form th:action="@{/checkout}" method="get">
+        <button type="submit" class="btn-checkout">Tiến hành thanh toán</button>
+      </form>
+    </aside>
+
+  </div>
+
+  <!-- Trường hợp giỏ hàng trống -->
+  <div class="empty-cart" th:if="${cartItems == null or #lists.isEmpty(cartItems)}">
+    <i class="ti ti-shopping-cart-off"></i>
+    <p>Giỏ hàng của bạn đang trống.</p>
+    <a th:href="@{/}" class="btn-primary">Tiếp tục mua sắm</a>
+  </div>
+
+</main>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.qty-form').forEach(function (form) {
+      const input = form.querySelector('.qty-input');
+      if (!input) return;
+
+      input.addEventListener('change', function () {
+        const value = Number(this.value);
+        if (!Number.isFinite(value) || value < 1) {
+          this.value = this.defaultValue || 1;
+          return;
+        }
+        form.submit();
+      });
+
+      input.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          form.submit();
+        }
+      });
+    });
+  });
+</script>
+</body>
+</html>

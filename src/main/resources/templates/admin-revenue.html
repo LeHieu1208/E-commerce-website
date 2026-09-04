@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quản trị - Báo cáo doanh thu</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+  :root {
+    --coral: #D85A30; --coral-light: #FAECE7; --coral-dark: #4A1B0C; --amber: #EF9F27;
+    --text-primary: #1F1D1A; --text-secondary: #6B6862; --text-muted: #9B968D;
+    --surface-0: #F7F5F1; --surface-1: #FFFFFF; --border: #E8E4DC; --border-strong: #D6D1C6;
+    --radius: 8px; --sidebar-bg: #211D19;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--surface-0); color: var(--text-primary); line-height: 1.5; }
+  a { text-decoration: none; color: inherit; }
+  .admin-wrap { display: flex; min-height: 100vh; }
+  .sidebar { width: 232px; flex-shrink: 0; background: var(--sidebar-bg); color: #D8D3C9; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+  .sidebar .brand { padding: 20px; font-size: 18px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .sidebar .brand i { color: var(--coral); font-size: 22px; }
+  .sidebar nav { padding: 12px 0; }
+  .sidebar nav a { display: flex; align-items: center; gap: 10px; padding: 11px 20px; font-size: 14px; color: #B8B2A6; border-left: 3px solid transparent; }
+  .sidebar nav a i { font-size: 18px; width: 18px; }
+  .sidebar nav a:hover { background: rgba(255,255,255,0.05); color: #fff; }
+  .sidebar nav a.active { background: rgba(216,90,48,0.16); color: #fff; border-left-color: var(--coral); font-weight: 600; }
+  .sidebar .divider { height: 1px; background: rgba(255,255,255,0.08); margin: 10px 20px; }
+  .sidebar .back-link { display: block; padding: 12px 20px; font-size: 13px; color: #9B958A; }
+  .sidebar .back-link:hover { color: #fff; }
+  .main { flex: 1; min-width: 0; }
+  .topbar { background: var(--surface-1); border-bottom: 1px solid var(--border); padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+  .topbar h1 { font-size: 19px; font-weight: 700; }
+  .topbar .admin-name { font-size: 13px; color: var(--text-secondary); }
+  .content { padding: 26px 28px 60px; max-width: 1400px; }
+
+  .panel { background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; margin-bottom: 20px; }
+  .panel h2 { font-size: 15px; font-weight: 700; margin-bottom: 16px; }
+
+  .filter-form { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; }
+  .filter-form .field label { display:block; font-size: 12px; color: var(--text-secondary); margin-bottom: 5px; }
+  .filter-form input[type=date] { padding: 9px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius); font-size: 13.5px; }
+  .filter-form button { padding: 10px 18px; background: var(--coral); color: #fff; border: none; border-radius: var(--radius); font-size: 13.5px; font-weight: 600; cursor: pointer; }
+  .quick-links { display:flex; gap:8px; margin-left:auto; flex-wrap:wrap; }
+  .quick-links a { font-size: 12.5px; padding: 8px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius); color: var(--text-secondary); }
+  .quick-links a:hover { border-color: var(--coral); color: var(--coral); }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; }
+  .stat-card { background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
+  .stat-card .label { font-size: 12.5px; color: var(--text-secondary); margin-bottom: 8px; }
+  .stat-card .value { font-size: 22px; font-weight: 700; color: var(--coral); }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+  @media (max-width: 980px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  table.data-table { width: 100%; border-collapse: collapse; }
+  .data-table th { text-align: left; font-size: 11.5px; text-transform: uppercase; color: var(--text-secondary); padding: 9px; border-bottom: 1px solid var(--border); }
+  .data-table td { padding: 10px 9px; border-bottom: 1px solid var(--border); font-size: 13.5px; }
+  .data-table td.num { text-align: right; }
+  .data-table th.num { text-align: right; }
+  .data-table tr:last-child td { border-bottom: none; }
+  .empty-note { color: var(--text-muted); font-size: 13.5px; padding: 10px 0; }
+</style>
+</head>
+<body>
+
+<div class="admin-wrap">
+  <aside class="sidebar">
+    <div class="brand"><i class="ti ti-shopping-bag"></i> Shopmart Admin</div>
+    <nav>
+      <a th:href="@{/admin}"><i class="ti ti-layout-dashboard"></i> Tổng quan</a>
+      <a th:href="@{/admin/orders}"><i class="ti ti-receipt"></i> Đơn hàng</a>
+            <a th:href="@{/admin/products}"...><i class="ti ti-package"></i> Sản phẩm</a>
+      <a th:href="@{/admin/categories}"><i class="ti ti-category"></i> Danh mục</a>
+      <a th:href="@{/admin/banners}"><i class="ti ti-ad-2"></i> Quảng cáo</a>
+      <a th:href="@{/admin/revenue}"...><i class="ti ti-chart-line"></i> Doanh thu</a>
+    </nav>
+    <div class="divider"></div>
+    <a th:href="@{/}" class="back-link"><i class="ti ti-arrow-left"></i> Về trang bán hàng</a>
+    <a th:href="@{/logout}" class="back-link"><i class="ti ti-logout"></i> Đăng xuất</a>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <h1>Báo cáo doanh thu</h1>
+      <div class="admin-name">Xin chào, <strong th:text="${currentUser.fullName != null ? currentUser.fullName : currentUser.email}">admin</strong></div>
+    </div>
+
+    <div class="content">
+      <div class="panel">
+        <form class="filter-form" method="get" th:action="@{/admin/revenue}">
+          <div class="field">
+            <label>Từ ngày</label>
+            <input type="date" name="from" th:value="${fromDate}">
+          </div>
+          <div class="field">
+            <label>Đến ngày</label>
+            <input type="date" name="to" th:value="${toDate}">
+          </div>
+          <button type="submit"><i class="ti ti-chart-line"></i> Xem báo cáo</button>
+          <div class="quick-links">
+            <a th:href="@{/admin/revenue(from=${T(java.time.LocalDate).now().minusDays(6)}, to=${T(java.time.LocalDate).now()})}">7 ngày</a>
+            <a th:href="@{/admin/revenue(from=${T(java.time.LocalDate).now().minusDays(29)}, to=${T(java.time.LocalDate).now()})}">30 ngày</a>
+            <a th:href="@{/admin/revenue(from=${T(java.time.LocalDate).now().minusDays(89)}, to=${T(java.time.LocalDate).now()})}">90 ngày</a>
+          </div>
+        </form>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="label">Doanh thu trong khoảng chọn</div>
+          <div class="value" th:text="${#numbers.formatDecimal(totalRevenue, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Số đơn hàng tính doanh thu</div>
+          <div class="value" th:text="${orderCount}">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Giá trị đơn hàng trung bình</div>
+          <div class="value" th:text="${#numbers.formatDecimal(avgOrderValue, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Doanh thu theo ngày</h2>
+        <canvas id="revenueChart" height="90"></canvas>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <h2>Sản phẩm bán chạy nhất</h2>
+          <table class="data-table" th:if="${!topProducts.isEmpty()}">
+            <thead><tr><th>Sản phẩm</th><th class="num">SL bán</th><th class="num">Doanh thu</th></tr></thead>
+            <tbody>
+              <tr th:each="p : ${topProducts}">
+                <td th:text="${p.name}">SP</td>
+                <td class="num" th:text="${p.quantity}">0</td>
+                <td class="num" th:text="${#numbers.formatDecimal(p.revenue, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="empty-note" th:if="${topProducts.isEmpty()}">Không có dữ liệu trong khoảng thời gian này.</p>
+        </div>
+
+        <div class="panel">
+          <h2>Doanh thu theo danh mục</h2>
+          <table class="data-table" th:if="${!categoryBreakdown.isEmpty()}">
+            <thead><tr><th>Danh mục</th><th class="num">Doanh thu</th></tr></thead>
+            <tbody>
+              <tr th:each="c : ${categoryBreakdown}">
+                <td th:text="${c.name}">Danh mục</td>
+                <td class="num" th:text="${#numbers.formatDecimal(c.revenue, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="empty-note" th:if="${categoryBreakdown.isEmpty()}">Không có dữ liệu trong khoảng thời gian này.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script th:inline="javascript">
+  const labels = /*[[${chartLabels}]]*/ [];
+  const values = /*[[${chartValues}]]*/ [];
+
+  new Chart(document.getElementById('revenueChart'), {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Doanh thu',
+        data: values,
+        backgroundColor: '#D85A30',
+        borderRadius: 4
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: { y: { ticks: { callback: (v) => v.toLocaleString('vi-VN') } } }
+    }
+  });
+</script>
+
+</body>
+</html>

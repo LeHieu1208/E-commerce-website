@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quản trị - Sản phẩm</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  :root { --coral: #D85A30; --coral-light: #FAECE7; --coral-dark: #4A1B0C; --amber: #EF9F27; --text-primary: #1F1D1A; --text-secondary: #6B6862; --text-muted: #9B968D; --surface-0: #F7F5F1; --surface-1: #FFFFFF; --border: #E8E4DC; --border-strong: #D6D1C6; --radius: 8px; --sidebar-bg: #211D19; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--surface-0); color: var(--text-primary); line-height: 1.5; }
+  a { text-decoration: none; color: inherit; }
+  .admin-wrap { display: flex; min-height: 100vh; }
+  .sidebar { width: 232px; flex-shrink: 0; background: var(--sidebar-bg); color: #D8D3C9; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+  .sidebar .brand { padding: 20px; font-size: 18px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .sidebar .brand i { color: var(--coral); font-size: 22px; }
+  .sidebar nav { padding: 12px 0; }
+  .sidebar nav a { display: flex; align-items: center; gap: 10px; padding: 11px 20px; font-size: 14px; color: #B8B2A6; border-left: 3px solid transparent; }
+  .sidebar nav a i { font-size: 18px; width: 18px; }
+  .sidebar nav a:hover { background: rgba(255,255,255,0.05); color: #fff; }
+  .sidebar nav a.active { background: rgba(216,90,48,0.16); color: #fff; border-left-color: var(--coral); font-weight: 600; }
+  .sidebar .divider { height: 1px; background: rgba(255,255,255,0.08); margin: 10px 20px; }
+  .sidebar .back-link { display: block; padding: 12px 20px; font-size: 13px; color: #9B958A; }
+  .sidebar .back-link:hover { color: #fff; }
+  .main { flex: 1; min-width: 0; }
+  .topbar { background: var(--surface-1); border-bottom: 1px solid var(--border); padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+  .topbar h1 { font-size: 19px; font-weight: 700; }
+  .topbar .admin-name { font-size: 13px; color: var(--text-secondary); }
+  .topbar .admin-name strong { color: var(--text-primary); }
+  .content { padding: 26px 28px 60px; max-width: 1400px; }
+  .flash { background: #DEF7E3; color: #1B8A3B; border: 1px solid #B9E9C4; padding: 10px 16px; border-radius: var(--radius); margin-bottom: 18px; font-size: 14px; }
+  .panel { background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; align-items: center; }
+  .toolbar input, .toolbar select { padding: 9px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius); font-size: 13.5px; }
+  .toolbar input { min-width: 220px; flex: 1; }
+  .toolbar button.filter-btn { padding: 9px 18px; background: var(--surface-0); border: 1px solid var(--border-strong); border-radius: var(--radius); font-size: 13.5px; cursor: pointer; }
+  .btn-add { margin-left: auto; padding: 10px 18px; background: var(--coral); color: #fff; border: none; border-radius: var(--radius); font-size: 13.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  table.data-table { width: 100%; border-collapse: collapse; }
+  .data-table th { text-align: left; font-size: 11.5px; text-transform: uppercase; color: var(--text-secondary); padding: 10px; border-bottom: 1px solid var(--border); }
+  .data-table td { padding: 10px; border-bottom: 1px solid var(--border); font-size: 13.5px; vertical-align: middle; }
+  .data-table tr:hover td { background: var(--surface-0); }
+  .data-table tr:last-child td { border-bottom: none; }
+  .prod-cell { display: flex; align-items: center; gap: 10px; }
+  .prod-cell img { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; background: var(--surface-0); border: 1px solid var(--border); }
+  .prod-cell .noimg { width: 40px; height: 40px; border-radius: 6px; background: var(--surface-0); border: 1px solid var(--border); display:flex; align-items:center; justify-content:center; color: var(--text-muted); }
+  .stock-ok { color: #1B8A3B; font-weight: 600; }
+  .stock-low { color: #C23B2B; font-weight: 700; }
+  .actions { display: flex; gap: 10px; }
+  .actions a, .actions button { font-size: 12.5px; color: var(--coral); background: none; border: none; cursor: pointer; padding: 0; font-family: inherit; }
+  .actions .del-btn { color: #C23B2B; }
+  .empty-note { color: var(--text-muted); font-size: 13.5px; padding: 20px 0; text-align: center; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  label { display:block; font-size: 12.5px; color: var(--text-secondary); margin-bottom: 5px; margin-top: 14px; }
+  label:first-of-type { margin-top: 0; }
+  input, select, textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius); font-size: 13.5px; font-family: inherit; }
+  textarea { resize: vertical; min-height: 90px; }
+  .btn-save { margin-top: 22px; width: 100%; padding: 12px; background: var(--coral); color: #fff; border: none; border-radius: var(--radius); font-size: 14px; font-weight: 700; cursor: pointer; }
+  .btn-save:hover { background: var(--coral-dark); }
+  .hint { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; }
+  .back-btn { font-size: 13px; color: var(--text-secondary); margin-bottom: 14px; display:inline-block; }
+</style>
+</head>
+<body>
+<div class="admin-wrap">
+  <aside class="sidebar">
+    <div class="brand"><i class="ti ti-shopping-bag"></i> Shopmart Admin</div>
+    <nav>
+      <a th:href="@{/admin}"><i class="ti ti-layout-dashboard"></i> Tổng quan</a>
+      <a th:href="@{/admin/orders}"><i class="ti ti-receipt"></i> Đơn hàng</a>
+      <a th:href="@{/admin/products}" class="active"><i class="ti ti-package"></i> Sản phẩm</a>
+      <a th:href="@{/admin/categories}"><i class="ti ti-category"></i> Danh mục</a>
+      <a th:href="@{/admin/banners}"><i class="ti ti-ad-2"></i> Quảng cáo</a>
+      <a th:href="@{/admin/revenue}"><i class="ti ti-chart-line"></i> Doanh thu</a>
+    </nav>
+    <div class="divider"></div>
+    <a th:href="@{/}" class="back-link"><i class="ti ti-arrow-left"></i> Về trang bán hàng</a>
+    <a th:href="@{/logout}" class="back-link"><i class="ti ti-logout"></i> Đăng xuất</a>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <h1>Sản phẩm</h1>
+      <div class="admin-name">Xin chào, <strong th:text="${currentUser != null and currentUser.fullName != null ? currentUser.fullName : (currentUser != null ? currentUser.email : 'admin')}">admin</strong></div>
+    </div>
+
+    <div class="content">
+      <div class="flash" th:if="${message}" th:text="${message}"></div>
+
+      <div th:if="${product == null}">
+        <div class="panel">
+          <form class="toolbar" method="get" th:action="@{/admin/products}">
+            <input type="text" name="keyword" placeholder="Tìm theo tên sản phẩm..." th:value="${keyword}">
+            <select name="categoryId">
+              <option value="">Tất cả danh mục</option>
+              <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}" th:selected="${categoryId != null and categoryId == c.id}"></option>
+            </select>
+            <button class="filter-btn" type="submit"><i class="ti ti-filter"></i> Lọc</button>
+            <a th:href="@{/admin/products/new}" class="btn-add"><i class="ti ti-plus"></i> Thêm sản phẩm</a>
+          </form>
+
+          <table class="data-table" th:if="${!products.isEmpty()}">
+            <thead>
+              <tr><th>Sản phẩm</th><th>Danh mục</th><th>Giá</th><th>Tồn kho</th><th></th></tr>
+            </thead>
+            <tbody>
+              <tr th:each="p : ${products}">
+                <td>
+                  <div class="prod-cell">
+                    <img th:if="${p.imageUrl != null and !p.imageUrl.isBlank()}" th:src="${p.imageUrl}" alt="">
+                    <div th:unless="${p.imageUrl != null and !p.imageUrl.isBlank()}" class="noimg"><i class="ti ti-photo"></i></div>
+                    <span th:text="${p.name}">Tên sản phẩm</span>
+                  </div>
+                </td>
+                <td th:text="${p.category != null ? p.category.name : '—'}">--</td>
+                <td th:text="${p.formattedPrice}">0 ₫</td>
+                <td>
+                  <span th:if="${p.stockQuantity != null and p.stockQuantity < 5}" class="stock-low" th:text="${p.stockQuantity}">0</span>
+                  <span th:unless="${p.stockQuantity != null and p.stockQuantity < 5}" class="stock-ok" th:text="${p.stockQuantity != null ? p.stockQuantity : 0}">0</span>
+                </td>
+                <td>
+                  <div class="actions">
+                    <a th:href="@{/admin/products/{id}/edit(id=${p.id})}">Sửa</a>
+                    <form method="post" th:action="@{/admin/products/{id}/delete(id=${p.id})}" onsubmit="return confirm('Xóa sản phẩm này?');" style="display:inline;">
+                      <button type="submit" class="del-btn">Xóa</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="empty-note" th:if="${products.isEmpty()}">Không có sản phẩm nào phù hợp.</p>
+        </div>
+      </div>
+
+      <div th:if="${product != null}">
+        <a class="back-btn" th:href="@{/admin/products}">&larr; Quay lại danh sách sản phẩm</a>
+        <div class="panel">
+          <form method="post" th:action="${isEdit} ? @{/admin/products/{id}(id=${product.id})} : @{/admin/products}">
+            <label>Tên sản phẩm</label>
+            <input type="text" name="name" th:value="${product.name}" required>
+
+            <label>Mô tả</label>
+            <textarea name="description" th:text="${product.description}"></textarea>
+
+            <div class="field-row">
+              <div>
+                <label>Giá bán (₫)</label>
+                <input type="number" step="1000" min="0" name="price" th:value="${product.price}" required>
+              </div>
+              <div>
+                <label>Giá gốc (₫, tùy chọn)</label>
+                <input type="number" step="1000" min="0" name="oldPrice" th:value="${product.oldPrice}">
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div>
+                <label>% Giảm giá</label>
+                <input type="number" min="0" max="100" name="discountPercent" th:value="${product.discountPercent}">
+              </div>
+              <div>
+                <label>Tồn kho</label>
+                <input type="number" min="0" name="stockQuantity" th:value="${product.stockQuantity}">
+              </div>
+            </div>
+
+            <label>Danh mục</label>
+            <select name="categoryId">
+              <option value="">-- Không thuộc danh mục --</option>
+              <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}" th:selected="${product.category != null and product.category.id == c.id}"></option>
+            </select>
+
+            <label>Link ảnh sản phẩm</label>
+            <input type="text" name="imageUrl" th:value="${product.imageUrl}" placeholder="https://...">
+            <div class="hint">Dán URL ảnh sản phẩm (có thể để trống)</div>
+
+            <button class="btn-save" type="submit">
+              <span th:text="${isEdit} ? 'Lưu thay đổi' : 'Thêm sản phẩm'">Lưu</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
