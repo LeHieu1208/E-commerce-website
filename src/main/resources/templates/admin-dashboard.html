@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quản trị - Tổng quan</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+  :root {
+    --coral: #D85A30; --coral-light: #FAECE7; --coral-dark: #4A1B0C; --amber: #EF9F27;
+    --text-primary: #1F1D1A; --text-secondary: #6B6862; --text-muted: #9B968D;
+    --surface-0: #F7F5F1; --surface-1: #FFFFFF; --border: #E8E4DC; --border-strong: #D6D1C6;
+    --radius: 8px; --sidebar-bg: #211D19;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--surface-0); color: var(--text-primary); line-height: 1.5; }
+  a { text-decoration: none; color: inherit; }
+  .admin-wrap { display: flex; min-height: 100vh; }
+  .sidebar { width: 232px; flex-shrink: 0; background: var(--sidebar-bg); color: #D8D3C9; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+  .sidebar .brand { padding: 20px; font-size: 18px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .sidebar .brand i { color: var(--coral); font-size: 22px; }
+  .sidebar nav { padding: 12px 0; }
+  .sidebar nav a { display: flex; align-items: center; gap: 10px; padding: 11px 20px; font-size: 14px; color: #B8B2A6; border-left: 3px solid transparent; }
+  .sidebar nav a i { font-size: 18px; width: 18px; }
+  .sidebar nav a:hover { background: rgba(255,255,255,0.05); color: #fff; }
+  .sidebar nav a.active { background: rgba(216,90,48,0.16); color: #fff; border-left-color: var(--coral); font-weight: 600; }
+  .sidebar .divider { height: 1px; background: rgba(255,255,255,0.08); margin: 10px 20px; }
+  .sidebar .back-link { display: block; padding: 12px 20px; font-size: 13px; color: #9B958A; }
+  .sidebar .back-link:hover { color: #fff; }
+  .main { flex: 1; min-width: 0; }
+  .topbar { background: var(--surface-1); border-bottom: 1px solid var(--border); padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+  .topbar h1 { font-size: 19px; font-weight: 700; }
+  .topbar .admin-name { font-size: 13px; color: var(--text-secondary); }
+  .topbar .admin-name strong { color: var(--text-primary); }
+  .content { padding: 26px 28px 60px; max-width: 1400px; }
+  .flash { background: #DEF7E3; color: #1B8A3B; border: 1px solid #B9E9C4; padding: 10px 16px; border-radius: var(--radius); margin-bottom: 18px; font-size: 14px; }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-bottom: 26px; }
+  .stat-card { background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
+  .stat-card .label { font-size: 12.5px; color: var(--text-secondary); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .stat-card .value { font-size: 23px; font-weight: 700; }
+  .stat-card.coral .value { color: var(--coral); }
+  .stat-card.amber .value { color: var(--amber); }
+  .stat-card.green .value { color: #1B8A3B; }
+  .stat-card.red .value { color: #C23B2B; }
+  .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; align-items: start; }
+  @media (max-width: 980px) { .grid-2 { grid-template-columns: 1fr; } }
+  .panel { background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; margin-bottom: 20px; }
+  .panel h2 { font-size: 15px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+  .panel h2 a { font-size: 12.5px; font-weight: 500; color: var(--coral); }
+  table.data-table { width: 100%; border-collapse: collapse; }
+  .data-table th { text-align: left; font-size: 11.5px; text-transform: uppercase; color: var(--text-secondary); padding: 10px; border-bottom: 1px solid var(--border); }
+  .data-table td { padding: 10px; border-bottom: 1px solid var(--border); font-size: 13.5px; vertical-align: middle; }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: var(--surface-0); }
+  .badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+  .badge-CHO_XAC_NHAN { background:#FFF3D6; color:#8A6100; }
+  .badge-CHO_THANH_TOAN { background:#FDEBDD; color:#B85C00; }
+  .badge-DA_THANH_TOAN { background:#DCEEFB; color:#0B5FA5; }
+  .badge-DA_XAC_NHAN { background:#E6E9FD; color:#3A3FC4; }
+  .badge-DANG_GIAO { background:#E3F1FF; color:#0B72C4; }
+  .badge-HOAN_THANH { background:#DEF7E3; color:#1B8A3B; }
+  .badge-DA_HUY { background:#FBE1DE; color:#C23B2B; }
+  .view-link { color: var(--coral); font-size: 12.5px; }
+  .stock-low { color: #C23B2B; font-weight: 700; }
+  .empty-note { color: var(--text-muted); font-size: 13.5px; padding: 20px 0; text-align: center; }
+</style>
+</head>
+<body>
+<div class="admin-wrap">
+  <aside class="sidebar">
+    <div class="brand"><i class="ti ti-shopping-bag"></i> Shopmart Admin</div>
+    <nav>
+      <a th:href="@{/admin}" class="active"><i class="ti ti-layout-dashboard"></i> Tổng quan</a>
+      <a th:href="@{/admin/orders}"><i class="ti ti-receipt"></i> Đơn hàng</a>
+      <a th:href="@{/admin/products}"><i class="ti ti-package"></i> Sản phẩm</a>
+      <a th:href="@{/admin/categories}"><i class="ti ti-category"></i> Danh mục</a>
+      <a th:href="@{/admin/banners}"><i class="ti ti-ad-2"></i> Quảng cáo</a>
+      <a th:href="@{/admin/revenue}"><i class="ti ti-chart-line"></i> Doanh thu</a>
+    </nav>
+    <div class="divider"></div>
+    <a th:href="@{/}" class="back-link"><i class="ti ti-arrow-left"></i> Về trang bán hàng</a>
+    <a th:href="@{/logout}" class="back-link"><i class="ti ti-logout"></i> Đăng xuất</a>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <h1>Dashboard</h1>
+      <div class="admin-name">Xin chào, <strong th:text="${currentUser != null and currentUser.fullName != null ? currentUser.fullName : (currentUser != null ? currentUser.email : 'admin')}">admin</strong></div>
+    </div>
+
+    <div class="content">
+      <div class="flash" th:if="${message}" th:text="${message}"></div>
+
+      <div class="stat-grid">
+        <div class="stat-card coral">
+          <div class="label"><i class="ti ti-cash"></i> Doanh thu hôm nay</div>
+          <div class="value" th:text="${#numbers.formatDecimal(revenueToday, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="label"><i class="ti ti-calendar"></i> Doanh thu tháng này</div>
+          <div class="value" th:text="${#numbers.formatDecimal(revenueMonth, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</div>
+        </div>
+        <div class="stat-card green">
+          <div class="label"><i class="ti ti-chart-bar"></i> Tổng doanh thu</div>
+          <div class="value" th:text="${#numbers.formatDecimal(revenueTotal, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</div>
+        </div>
+        <div class="stat-card">
+          <div class="label"><i class="ti ti-receipt"></i> Tổng đơn hàng</div>
+          <div class="value" th:text="${totalOrders}">0</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="label"><i class="ti ti-clock"></i> Đang xử lý</div>
+          <div class="value" th:text="${pendingOrders}">0</div>
+        </div>
+        <div class="stat-card red">
+          <div class="label"><i class="ti ti-x"></i> Đã hủy</div>
+          <div class="value" th:text="${cancelledOrders}">0</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <div class="panel">
+            <h2>Doanh thu 14 ngày gần nhất</h2>
+            <canvas id="revenueChart" height="110"></canvas>
+          </div>
+
+          <div class="panel">
+            <h2>Đơn hàng gần đây <a th:href="@{/admin/orders}">Xem tất cả →</a></h2>
+            <table class="data-table" th:if="${!recentOrders.isEmpty()}">
+              <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Tổng tiền</th><th>Trạng thái</th><th></th></tr></thead>
+              <tbody>
+                <tr th:each="o : ${recentOrders}">
+                  <td th:text="${o.orderCode}">DH...</td>
+                  <td th:text="${o.fullName}">Khách</td>
+                  <td th:text="${#numbers.formatDecimal(o.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</td>
+                  <td><span th:class="'badge badge-' + ${o.status}" th:text="${statusLabels.get(o.status)}">--</span></td>
+                  <td><a th:href="@{/admin/orders/{id}(id=${o.id})}" class="view-link">Xem</a></td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="empty-note" th:if="${recentOrders.isEmpty()}">Chưa có đơn hàng nào.</p>
+          </div>
+        </div>
+
+        <div>
+          <div class="panel">
+            <h2>Sản phẩm bán chạy</h2>
+            <table class="data-table" th:if="${!topProducts.isEmpty()}">
+              <thead><tr><th>Sản phẩm</th><th>SL</th></tr></thead>
+              <tbody>
+                <tr th:each="p : ${topProducts}">
+                  <td th:text="${p.name}">Sản phẩm</td>
+                  <td th:text="${p.quantity}">0</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="empty-note" th:if="${topProducts.isEmpty()}">Chưa có dữ liệu bán hàng.</p>
+          </div>
+
+          <div class="panel">
+            <h2>Sắp hết hàng <a th:href="@{/admin/products}">Quản lý →</a></h2>
+            <table class="data-table" th:if="${!lowStockProducts.isEmpty()}">
+              <thead><tr><th>Sản phẩm</th><th>Tồn kho</th></tr></thead>
+              <tbody>
+                <tr th:each="p : ${lowStockProducts}">
+                  <td th:text="${p.name}">Sản phẩm</td>
+                  <td class="stock-low" th:text="${p.stockQuantity}">0</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="empty-note" th:if="${lowStockProducts.isEmpty()}">Không có sản phẩm sắp hết hàng.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script th:inline="javascript">
+  const labels = /*[[${chartLabels}]]*/ [];
+  const values = /*[[${chartValues}]]*/ [];
+
+  new Chart(document.getElementById('revenueChart'), {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Doanh thu',
+        data: values,
+        borderColor: '#D85A30',
+        backgroundColor: 'rgba(216,90,48,0.12)',
+        tension: 0.3,
+        fill: true,
+        pointRadius: 3
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: { y: { ticks: { callback: (v) => v.toLocaleString('vi-VN') } } }
+    }
+  });
+</script>
+</body>
+</html>

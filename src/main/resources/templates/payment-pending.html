@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quét mã thanh toán - Shopmart</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  :root {
+    --coral: #D85A30;
+    --coral-light: #FAECE7;
+    --coral-dark: #4A1B0C;
+    --text-primary: #1F1D1A;
+    --text-secondary: #6B6862;
+    --text-muted: #9B968D;
+    --surface-0: #F7F5F1;
+    --surface-1: #FFFFFF;
+    --border: #E8E4DC;
+    --border-strong: #D6D1C6;
+    --radius: 8px;
+    --green: #2E9E5B;
+    --green-light: #E8F6EE;
+    --amber: #EF9F27;
+    --amber-light: #FAEEDA;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--surface-0); color: var(--text-primary); line-height: 1.5; }
+  a { text-decoration: none; color: inherit; }
+  .container { max-width: 640px; margin: 0 auto; padding: 0 20px; }
+
+  header { background: var(--surface-1); border-bottom: 1px solid var(--border); }
+  .header-inner { max-width: 1100px; margin: 0 auto; padding: 14px 20px; }
+  .logo { font-size: 20px; font-weight: 700; color: var(--coral); }
+
+  .card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px 28px;
+    margin: 40px 0;
+    text-align: center;
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--amber-light);
+    color: #854F0B;
+    font-size: 12.5px;
+    font-weight: 700;
+    padding: 5px 14px;
+    border-radius: 999px;
+    margin-bottom: 16px;
+  }
+
+  .status-pill.paid { background: var(--green-light); color: #085041; }
+
+  .spinner {
+    width: 12px; height: 12px;
+    border: 2px solid #854F0B;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .card h1 { font-size: 19px; margin-bottom: 6px; }
+  .card p.sub { color: var(--text-secondary); font-size: 13px; margin-bottom: 24px; }
+  .order-code { color: var(--coral); font-weight: 700; }
+
+  .qr-wrap {
+    display: inline-block;
+    padding: 14px;
+    background: var(--surface-0);
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius);
+  }
+
+  .qr-wrap img { width: 220px; height: 220px; display: block; border-radius: 8px; background: #fff; }
+
+  .bank-info { text-align: left; max-width: 280px; margin: 20px auto 0; font-size: 13px; }
+  .bank-info div { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed var(--border); color: var(--text-secondary); }
+  .bank-info div span:last-child { font-weight: 700; color: var(--text-primary); }
+
+  .amount-highlight { font-size: 20px; font-weight: 700; color: var(--coral-dark); }
+
+  .note {
+    margin-top: 20px;
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--surface-0);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    text-align: left;
+  }
+
+  .actions { margin-top: 24px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 10px 18px; border-radius: var(--radius); font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
+  .btn-primary { background: var(--coral); color: #fff; }
+  .btn-primary:hover { background: #C24E27; }
+  .btn-secondary { background: var(--surface-1); color: var(--text-primary); border: 1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a th:href="@{/}" class="logo">Shopmart</a>
+  </div>
+</header>
+
+<main class="container">
+  <div class="card">
+    <div class="status-pill" id="statusPill"><span class="spinner"></span> Đang chờ thanh toán</div>
+    <h1>Quét mã để hoàn tất đơn hàng</h1>
+    <p class="sub">Mã đơn hàng: <span class="order-code" th:text="${order.orderCode}">DH000000</span> — trang sẽ tự động chuyển tiếp ngay khi nhận được tiền</p>
+
+    <div class="qr-wrap">
+      <img th:src="${qrUrl}" alt="Mã QR chuyển khoản VietQR">
+    </div>
+
+    <div class="bank-info">
+      <div><span>Ngân hàng</span><span th:text="${bankId}">VCB</span></div>
+      <div><span>Số tài khoản</span><span th:text="${bankAccountNo}">0123456789</span></div>
+      <div><span>Chủ tài khoản</span><span th:text="${bankAccountName}">SHOPMART JSC</span></div>
+      <div><span>Số tiền</span>
+        <span class="amount-highlight" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</span>
+      </div>
+      <div><span>Nội dung CK</span><span th:text="'Thanh toan don hang ' + ${order.orderCode}">-</span></div>
+    </div>
+
+    <div class="note">
+      <i class="ti ti-info-circle"></i>
+      Vui lòng giữ nguyên nội dung chuyển khoản và chuyển đúng số tiền để hệ thống tự động đối soát.
+      Đơn hàng sẽ được xác nhận trong vòng vài giây sau khi ngân hàng báo có.
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn btn-secondary" id="checkNowBtn">Tôi đã chuyển khoản, kiểm tra ngay</button>
+      <a th:href="@{/cart}" class="btn btn-secondary">Huỷ, quay lại giỏ hàng</a>
+    </div>
+  </div>
+</main>
+
+<script th:inline="javascript">
+  const orderCode = /*[[${order.orderCode}]]*/ '';
+  const statusPill = document.getElementById('statusPill');
+  const checkNowBtn = document.getElementById('checkNowBtn');
+  let polling = true;
+
+  async function checkStatus() {
+    try {
+      const res = await fetch(`/api/orders/${orderCode}/status`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.paid) {
+        polling = false;
+        statusPill.classList.add('paid');
+        statusPill.innerHTML = '<i class="ti ti-check"></i> Đã nhận được thanh toán';
+        setTimeout(() => {
+          window.location.href = `/checkout/success/${orderCode}`;
+        }, 700);
+      }
+    } catch (err) {
+      // bỏ qua lỗi mạng tạm thời, sẽ thử lại ở lần polling kế tiếp
+    }
+  }
+
+  checkNowBtn.addEventListener('click', checkStatus);
+
+  const intervalId = setInterval(() => {
+    if (!polling) { clearInterval(intervalId); return; }
+    checkStatus();
+  }, 3000);
+
+  checkStatus();
+</script>
+
+</body>
+</html>

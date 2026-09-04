@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng nhập & Đăng ký</title>
+    <style>
+        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f4f4f9; margin: 0; }
+        .card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 320px; margin: 10px; }
+        h3 { margin-bottom: 15px; color: #333; }
+        input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background-color: #d85a30; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #b94a22; }
+        .switch { margin-top: 12px; text-align: center; font-size: 13px; }
+        .switch a { color: #d85a30; font-weight: 600; }
+        .msg { margin-top: 10px; font-size: 14px; color: #d85a30; }
+    </style>
+</head>
+<body>
+
+<div style="display: flex; flex-wrap: wrap; justify-content: center;">
+    <div class="card" th:if="${mode == 'login'}">
+        <h3>Đăng nhập</h3>
+        <form th:action="@{/auth/login}" method="post">
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="password" name="password" placeholder="Mật khẩu" required>
+            <button type="submit">Đăng nhập</button>
+        </form>
+        <div class="switch"><a th:href="@{/auth(mode='register')}">Chưa có tài khoản? Đăng ký</a></div>
+    </div>
+
+    <div class="card" th:if="${mode != 'login'}">
+        <h3>Đăng ký</h3>
+        <form th:action="@{/auth/register}" method="post">
+            <input type="text" name="fullName" placeholder="Họ và tên" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="password" name="password" placeholder="Mật khẩu" required>
+            <button type="submit">Đăng ký</button>
+        </form>
+        <div class="switch"><a th:href="@{/auth(mode='login')}">Đã có tài khoản? Đăng nhập</a></div>
+    </div>
+</div>
+
+<div style="position: fixed; top: 16px; right: 16px;" th:if="${message}">
+    <div class="msg" th:text="${message}"></div>
+</div>
+
+</body>
+</html>

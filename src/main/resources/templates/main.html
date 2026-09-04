@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shopmart - Trang chủ</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  :root {
+    --coral: #D85A30;
+    --coral-light: #FAECE7;
+    --coral-dark: #4A1B0C;
+    --amber: #EF9F27;
+    --text-primary: #1F1D1A;
+    --text-secondary: #6B6862;
+    --text-muted: #9B968D;
+    --surface-0: #F7F5F1;
+    --surface-1: #FFFFFF;
+    --border: #E8E4DC;
+    --border-strong: #D6D1C6;
+    --radius: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--surface-0);
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+
+  a { text-decoration: none; color: inherit; }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* ---------- Header ---------- */
+  header {
+    background: var(--surface-1);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    gap: 20px;
+  }
+
+  .logo {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--coral);
+    white-space: nowrap;
+  }
+
+  .search-box {
+    flex: 1;
+    max-width: 480px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface-0);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 14px;
+    transition: border-color 0.15s ease;
+    position: relative;
+  }
+
+  .search-box:focus-within { border-color: var(--coral); }
+  .search-box i { color: var(--text-muted); font-size: 16px; }
+
+  .search-box input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 14px;
+    width: 100%;
+    color: var(--text-primary);
+  }
+
+  .search-results {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    z-index: 200;
+    display: none;
+  }
+
+  .search-results.show { display: block; }
+
+  .search-result-item {
+    display: block;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-primary);
+    font-size: 13px;
+  }
+
+  .search-result-item:last-child { border-bottom: none; }
+  .search-result-item:hover { background: var(--surface-0); }
+  .search-result-item strong { display: block; margin-bottom: 2px; }
+  .search-result-item span { color: var(--text-secondary); font-size: 12px; }
+
+  .header-icons {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .header-user {
+    font-size: 13px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .header-user a {
+    color: var(--coral);
+    font-weight: 600;
+  }
+
+  .icon-btn {
+    position: relative;
+    font-size: 20px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color 0.15s ease;
+    display: flex;
+  }
+
+  .icon-btn:hover { color: var(--coral); }
+
+  .badge {
+    position: absolute;
+    top: -6px;
+    right: -8px;
+    background: var(--coral);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+  }
+
+  /* ---------- Flash message: thay cho toast JS ---------- */
+  .flash-message {
+    margin-top: 16px;
+    background: var(--coral-dark);
+    color: #fff;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ---------- Banner ---------- */
+  .banner {
+    background: var(--coral-light);
+    border-radius: 14px;
+    padding: 36px 40px;
+    margin: 24px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .banner h1 { font-size: 26px; font-weight: 700; color: var(--coral-dark); margin-bottom: 8px; }
+  .banner p { font-size: 14px; color: var(--text-secondary); margin-bottom: 18px; }
+
+  .btn-primary {
+    display: inline-block;
+    background: var(--coral);
+    color: #fff;
+    border: none;
+    padding: 11px 22px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  .btn-primary:hover { background: #C24E27; }
+
+  .banner-icon { font-size: 56px; color: var(--coral); opacity: 0.6; flex-shrink: 0; }
+
+  /* ---------- Banner slider (quảng cáo) ---------- */
+  .banner-slider {
+    position: relative;
+    margin: 24px 0;
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--coral-light);
+  }
+  .banner-slide { display: none; }
+  .banner-slide.active { display: block; }
+  .banner-slide a { display: block; }
+  .banner-slide img { width: 100%; height: 280px; object-fit: cover; display: block; }
+  .banner-dots {
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+  }
+  .banner-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.6);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    padding: 0;
+  }
+  .banner-dot.active { background: #fff; width: 22px; border-radius: 4px; }
+  @media (max-width: 640px) { .banner-slide img { height: 160px; } }
+
+  /* ---------- Section headings ---------- */
+  .section-title { font-size: 18px; font-weight: 700; margin-bottom: 14px; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .see-all { font-size: 13px; color: var(--coral); font-weight: 600; }
+
+  /* ---------- Categories ---------- */
+  .categories {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .category-card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 10px;
+    text-align: center;
+    transition: border-color 0.15s ease, transform 0.1s ease;
+    display: block;
+  }
+
+  .category-card:hover { border-color: var(--coral); transform: translateY(-2px); }
+  .category-card i { font-size: 24px; color: var(--text-secondary); margin-bottom: 8px; display: block; }
+  .category-card span { font-size: 13px; font-weight: 500; }
+
+  /* ---------- Products ---------- */
+  .products {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 220px));
+    gap: 18px;
+    margin-bottom: 40px;
+  }
+
+  .product-card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
+  }
+
+  .product-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.06); transform: translateY(-2px); }
+
+  .product-image {
+    height: 150px;
+    background: var(--surface-0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .product-image i { font-size: 40px; color: var(--text-muted); }
+
+  .product-tag {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: var(--amber);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .product-info { padding: 14px; }
+  .product-name { font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+
+  .product-price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .price { font-size: 16px; font-weight: 700; color: var(--coral-dark); }
+  .price-old { font-size: 12px; color: var(--text-muted); text-decoration: line-through; }
+
+  .product-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+  }
+
+  .product-rating i { color: var(--amber); font-size: 13px; }
+
+  .add-to-cart-form { margin: 0; }
+
+  .product-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn-add {
+    width: 100%;
+    background: var(--surface-0);
+    border: 1px solid var(--border-strong);
+    color: var(--text-primary);
+    padding: 9px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+
+  .btn-add:hover { background: var(--coral); border-color: var(--coral); color: #fff; }
+
+  .empty-state {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 40px 0;
+    font-size: 14px;
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 600px) {
+    .search-box { display: none; }
+    .banner { flex-direction: column; text-align: center; padding: 28px 20px; }
+    .banner-icon { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a th:href="@{/}" class="logo">Shopmart</a>
+
+    <form class="search-box" th:action="@{/products}" method="get">
+      <i class="ti ti-search"></i>
+      <input id="searchInput" type="text" name="keyword" placeholder="Tìm sản phẩm..." th:value="${keyword}">
+      <div id="searchResults" class="search-results"></div>
+    </form>
+
+    <div class="header-icons">
+      <div class="header-user" th:if="${currentUser != null}">
+        <i class="ti ti-user"></i>
+        <span>Xin chào, <strong th:text="${currentUser.fullName != null ? currentUser.fullName : currentUser.email}">user</strong></span>
+        <a th:href="@{/logout}">Đăng xuất</a>
+      </div>
+      <a th:unless="${currentUser != null}" th:href="@{/auth(mode='login')}" class="header-user">Đăng nhập</a>
+      <a th:href="@{/wishlist}" class="icon-btn" aria-label="Yêu thích"><i class="ti ti-heart"></i></a>
+      <a th:href="@{/cart}" class="icon-btn" aria-label="Giỏ hàng">
+        <i class="ti ti-shopping-cart"></i>
+        <span class="badge" th:text="${cartCount != null} ? ${cartCount} : 0">0</span>
+      </a>
+      <a th:href="@{/profile}" class="icon-btn" aria-label="Thông tin"><i class="ti ti-id"></i></a>
+      <a th:if="${currentUser != null and currentUser.role == 'ROLE_ADMIN'}" th:href="@{/admin}" class="icon-btn" aria-label="Quản trị" title="Trang quản trị"><i class="ti ti-layout-dashboard"></i></a>
+    </div>
+  </div>
+</header>
+
+<!-- Flash message: Controller đẩy qua RedirectAttributes, chỉ hiện 1 lần sau redirect -->
+<div class="container" th:if="${message}">
+  <div class="flash-message">
+    <i class="ti ti-check"></i>
+    <span th:text="${message}"></span>
+  </div>
+</div>
+
+<main class="container">
+
+    <section class="banner-slider" th:if="${!banners.isEmpty()}">
+    <div th:each="b, iter : ${banners}" class="banner-slide" th:classappend="${iter.first} ? ' active' : ''">
+      <a th:href="${b.link}">
+        <img th:src="${b.imageUrl}" th:alt="${b.title}">
+      </a>
+    </div>
+    <div class="banner-dots" th:if="${banners.size() > 1}">
+      <button th:each="b, iter : ${banners}" type="button" class="banner-dot" th:classappend="${iter.first} ? ' active' : ''" th:attr="data-index=${iter.index}"></button>
+    </div>
+  </section>
+
+  <section class="banner" th:if="${banners.isEmpty()}">
+    <div>
+      <h1>Sale hè giảm đến 50%</h1>
+      <p>Áp dụng cho toàn bộ danh mục thời trang, số lượng có hạn</p>
+      <a th:href="@{/products}" class="btn-primary">Mua ngay</a>
+    </div>
+    <i class="ti ti-shopping-bag banner-icon"></i>
+  </section>
+
+  <section>
+    <h2 class="section-title">Danh mục</h2>
+    <div class="categories">
+      <a th:each="c : ${categories}"
+         th:href="@{/products(categoryId=${c.id})}"
+         class="category-card">
+        <i class="ti" th:classappend="${c.icon}"></i>
+        <span th:text="${c.name}">Tên danh mục</span>
+      </a>
+    </div>
+  </section>
+
+  <div th:each="group : ${categoryGroups}">
+  <section class="category-products-section" th:if="${!#lists.isEmpty(group.products)}">
+    <div class="section-header">
+      <h2 class="section-title" th:text="${group.category.name}">Tên danh mục</h2>
+      <a th:href="@{/products(categoryId=${group.category.id})}" class="see-all">Xem tất cả</a>
+    </div>
+
+    <div class="products">
+      <div class="product-card" th:each="p : ${group.products}">
+        <div class="product-image">
+          <span class="product-tag" th:if="${p.discountPercent != null and p.discountPercent > 0}"
+                th:text="'-' + ${p.discountPercent} + '%'"></span>
+
+          <!-- Trường hợp 1: Nếu sản phẩm có thuộc tính imageUrl (đường link ảnh) -->
+          <img th:if="${p.imageUrl != null and !#strings.isEmpty(p.imageUrl)}"
+               th:src="${p.imageUrl}"
+               th:alt="${p.name}"
+               style="width: 100%; height: 100%; object-fit: cover;" />
+
+          <!-- Trường hợp 2: Hiển thị icon mặc định/fallback nếu không có ảnh -->
+          <i th:unless="${p.imageUrl != null and !#strings.isEmpty(p.imageUrl)}"
+             class="ti"
+             th:classappend="${p.icon != null ? p.icon : 'ti-package'}"></i>
+        </div>
+        <div class="product-info">
+          <p class="product-name" th:text="${p.name}">Tên sản phẩm</p>
+          <div class="product-price-row">
+            <span class="price"
+                  th:text="${#numbers.formatDecimal((p.discountPercent != null && p.discountPercent > 0) ? p.discountedPrice : p.price, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</span>
+            <span class="price-old"
+                  th:if="${p.oldPrice != null || (p.discountPercent != null && p.discountPercent > 0)}"
+                  th:text="${#numbers.formatDecimal(p.oldPrice != null ? p.oldPrice : p.price, 0, 'COMMA', 0, 'POINT')} + 'đ'"></span>
+          </div>
+          <div class="product-rating">
+            <i class="ti ti-star"></i>
+            <span th:text="${p.rating} + ' (' + ${p.reviewCount} + ')'">0 (0)</span>
+          </div>
+
+          <div class="product-actions">
+            <form th:action="@{/cart/add}" method="post" class="add-to-cart-form">
+              <input type="hidden" name="productId" th:value="${p.id}">
+              <input type="hidden" name="quantity" value="1">
+              <button type="submit" class="btn-add">
+                <i class="ti ti-shopping-cart-plus"></i>
+                <span>Thêm vào giỏ</span>
+              </button>
+            </form>
+            <form th:action="@{/wishlist/add}" method="post" class="add-to-cart-form">
+              <input type="hidden" name="productId" th:value="${p.id}">
+              <button type="submit" class="btn-add" style="width:auto; padding: 9px 12px;">
+                <i class="ti ti-heart"></i>
+              </button>
+            </form>
+            <a th:href="@{/products/{id}(id=${p.id})}" class="btn-add" style="width:auto; padding: 9px 12px;">
+              <span>Xem chi tiết</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<p th:if="${#lists.isEmpty(products) and #lists.isEmpty(categoryGroups)}" class="empty-state">
+  Chưa có sản phẩm nào để hiển thị.
+</p>
+
+</main>
+
+<script>
+  const bannerSlides = document.querySelectorAll('.banner-slide');
+  const bannerDots = document.querySelectorAll('.banner-dot');
+  let bannerIndex = 0;
+
+  function showBanner(index) {
+    bannerSlides.forEach((el, i) => el.classList.toggle('active', i === index));
+    bannerDots.forEach((el, i) => el.classList.toggle('active', i === index));
+    bannerIndex = index;
+  }
+
+  if (bannerSlides.length > 1) {
+    bannerDots.forEach(dot => {
+      dot.addEventListener('click', () => showBanner(parseInt(dot.dataset.index, 10)));
+    });
+    setInterval(() => {
+      showBanner((bannerIndex + 1) % bannerSlides.length);
+    }, 4000);
+  }
+
+  const searchInput = document.getElementById('searchInput');
+  const searchResults = document.getElementById('searchResults');
+
+  if (searchInput && searchResults) {
+    searchInput.addEventListener('input', async function () {
+      const keyword = this.value.trim();
+      if (!keyword) {
+        searchResults.innerHTML = '';
+        searchResults.classList.remove('show');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/products/search?keyword=${encodeURIComponent(keyword)}`);
+        const products = await response.json();
+        if (!products.length) {
+          searchResults.innerHTML = '<div class="search-result-item"><strong>Không tìm thấy sản phẩm</strong><span>Thử từ khóa khác</span></div>';
+          searchResults.classList.add('show');
+          return;
+        }
+
+        searchResults.innerHTML = products.map(product => `
+          <a class="search-result-item" href="/products/${product.id}">
+            <strong>${product.name}</strong>
+            <span>${product.category ? product.category.name : 'Danh mục'}</span>
+          </a>
+        `).join('');
+        searchResults.classList.add('show');
+      } catch (error) {
+        searchResults.innerHTML = '<div class="search-result-item"><strong>Lỗi tìm kiếm</strong><span>Vui lòng thử lại</span></div>';
+        searchResults.classList.add('show');
+      }
+    });
+
+    document.addEventListener('click', function (event) {
+      if (!searchInput.contains(event.target) && !searchResults.contains(event.target)) {
+        searchResults.classList.remove('show');
+      }
+    });
+  }
+</script>
+
+</body>
+</html>

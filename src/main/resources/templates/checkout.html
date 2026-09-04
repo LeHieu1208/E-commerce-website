@@ -1,0 +1,1075 @@
+﻿<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thanh toán | Shopmart</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --primary: #d95d2a;
+            --primary-strong: #bf4b1c;
+            --primary-soft: #fff1ea;
+            --bg: #f7f3ef;
+            --card: #ffffff;
+            --line: #e9e1d9;
+            --text: #1f1c1a;
+            --muted: #6a625d;
+            --shadow: 0 20px 45px rgba(31, 28, 26, 0.08);
+            --success: #2f9f63;
+        }
+
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+        }
+
+        a { color: inherit; text-decoration: none; }
+        button, input, textarea { font: inherit; }
+
+        .container {
+            width: min(1200px, calc(100% - 32px));
+            margin: 0 auto;
+        }
+
+        .topbar {
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--line);
+            position: sticky;
+            top: 0;
+            z-index: 30;
+        }
+
+        .topbar-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            min-height: 76px;
+        }
+
+        .brand {
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: -0.06em;
+            color: var(--primary);
+        }
+
+        .topbar-search {
+            flex: 1;
+            max-width: 540px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f6f3f1;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 10px 14px;
+        }
+
+        .topbar-search input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-size: 0.96rem;
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .icon-button {
+            position: relative;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            background: transparent;
+            border: 1px solid transparent;
+            transition: 0.2s ease;
+        }
+
+        .icon-button:hover {
+            background: var(--primary-soft);
+            border-color: rgba(217, 93, 42, 0.15);
+            color: var(--primary);
+        }
+
+        .badge {
+            position: absolute;
+            top: -4px;
+            right: -2px;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 999px;
+            background: var(--primary);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5px;
+        }
+
+        .page {
+            padding: 28px 0 48px;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            font-size: 0.82rem;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .breadcrumb a {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 22px;
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: clamp(2rem, 3vw, 2.7rem);
+            letter-spacing: -0.05em;
+        }
+
+        .stepper {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            color: var(--muted);
+            font-size: 0.82rem;
+        }
+
+        .step {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            padding: 8px 12px;
+        }
+
+        .step.active {
+            background: var(--primary-soft);
+            border-color: rgba(217, 93, 42, 0.25);
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .step .circle {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #f2eee9;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .step.active .circle {
+            background: var(--primary);
+            color: white;
+        }
+
+        .checkout-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.5fr) minmax(300px, 0.82fr);
+            gap: 24px;
+            align-items: start;
+        }
+
+        .panel {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            padding: 24px;
+        }
+
+        .panel + .panel {
+            margin-top: 20px;
+        }
+
+        .panel-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .panel-title {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.12rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .panel-title i {
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 15px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .field label {
+            color: var(--muted);
+            font-size: 0.79rem;
+            font-weight: 700;
+        }
+
+        .field input,
+        .field textarea {
+            width: 100%;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: #faf8f6;
+            color: var(--text);
+            padding: 12px 14px;
+            outline: none;
+            transition: 0.2s ease;
+        }
+
+        .field input:focus,
+        .field textarea:focus {
+            border-color: rgba(217, 93, 42, 0.4);
+            box-shadow: 0 0 0 4px rgba(217, 93, 42, 0.08);
+            background: white;
+        }
+
+        .field textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .address-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .address-row .field {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .map-button {
+            margin-top: 24px;
+            border: 1px solid rgba(217,93,42,0.3);
+            background: var(--primary-soft);
+            color: var(--primary);
+            border-radius: 12px;
+            padding: 11px 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .map-button:hover {
+            background: #ffe7dc;
+        }
+
+        .muted-note {
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 0.75rem;
+        }
+
+        .payment-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .payment-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 16px;
+            border: 1.5px solid var(--line);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: 0.2s ease;
+            background: white;
+        }
+
+        .payment-option:hover {
+            border-color: rgba(217,93,42,0.35);
+            background: #fffaf7;
+        }
+
+        .payment-option.active {
+            border-color: rgba(217,93,42,0.5);
+            background: var(--primary-soft);
+        }
+
+        .payment-option input {
+            accent-color: var(--primary);
+            width: 17px;
+            height: 17px;
+            margin-top: 3px;
+        }
+
+        .payment-info {
+            flex: 1;
+        }
+
+        .payment-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 800;
+        }
+
+        .payment-title i {
+            color: var(--primary);
+        }
+
+        .payment-desc {
+            margin-top: 5px;
+            color: var(--muted);
+            font-size: 0.76rem;
+        }
+
+        .qr-box {
+            display: none;
+            margin-top: 14px;
+            padding: 16px;
+            border: 1px dashed var(--line);
+            border-radius: 14px;
+            background: rgba(255,255,255,0.85);
+        }
+
+        .qr-box.show {
+            display: block;
+        }
+
+        .qr-box img {
+            display: block;
+            width: 180px;
+            height: 180px;
+            margin: 0 auto;
+            padding: 8px;
+            background: white;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            object-fit: contain;
+        }
+
+        .qr-grid {
+            margin-top: 14px;
+            color: var(--muted);
+            font-size: 0.78rem;
+        }
+
+        .qr-grid div {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 6px 0;
+            border-bottom: 1px dashed var(--line);
+        }
+
+        .qr-grid strong {
+            color: var(--text);
+        }
+
+        .qr-note {
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: var(--success);
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .summary-card {
+            position: sticky;
+            top: 92px;
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            padding: 22px;
+        }
+
+        .summary-card h2 {
+            margin: 0 0 14px;
+            font-size: 1.15rem;
+        }
+
+        .summary-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .summary-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .thumb {
+            width: 56px;
+            height: 56px;
+            background: #faf7f5;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .thumb i {
+            color: var(--muted);
+            font-size: 1.2rem;
+        }
+
+        .summary-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .summary-name {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 800;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .summary-meta {
+            margin-top: 2px;
+            color: var(--muted);
+            font-size: 0.72rem;
+        }
+
+        .summary-price {
+            color: var(--primary);
+            font-weight: 800;
+            font-size: 0.84rem;
+            white-space: nowrap;
+        }
+
+        .summary-total {
+            margin-top: 12px;
+            border-top: 1px solid var(--line);
+            padding-top: 12px;
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .row strong {
+            color: var(--text);
+        }
+
+        .row.total {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid var(--line);
+            color: var(--text);
+            font-size: 1.05rem;
+            font-weight: 900;
+        }
+
+        .checkout-button {
+            margin-top: 18px;
+            width: 100%;
+            border: none;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+            color: white;
+            font-weight: 800;
+            font-size: 1rem;
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .checkout-button:hover {
+            filter: brightness(0.97);
+            transform: translateY(-1px);
+        }
+
+        .empty-state {
+            padding: 18px 10px 6px;
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+
+        .map-overlay {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+            background: rgba(18, 15, 13, 0.52);
+            z-index: 100;
+        }
+
+        .map-overlay.show {
+            display: flex;
+        }
+
+        .map-modal {
+            background: white;
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            width: min(760px, 100%);
+            overflow: hidden;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.24);
+        }
+
+        .map-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .map-header h3 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+        }
+
+        .close-map {
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            font-size: 2rem;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        .map-search {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .map-search input {
+            flex: 1;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: #faf8f6;
+            padding: 10px 12px;
+            outline: none;
+        }
+
+        .map-search button {
+            border: none;
+            background: var(--primary);
+            color: white;
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        #map {
+            width: 100%;
+            height: 330px;
+        }
+
+        .map-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            background: #faf8f6;
+            border-top: 1px solid var(--line);
+            padding: 14px 18px;
+        }
+
+        .map-address {
+            flex: 1;
+            min-width: 0;
+            color: var(--muted);
+            font-size: 0.78rem;
+        }
+
+        .map-address strong {
+            display: block;
+            color: var(--text);
+            margin-bottom: 3px;
+        }
+
+        .confirm-location {
+            border: none;
+            border-radius: 12px;
+            background: var(--primary);
+            color: white;
+            padding: 10px 16px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .confirm-location:disabled {
+            background: #d8d0ca;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 920px) {
+            .checkout-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-card {
+                position: static;
+            }
+        }
+
+        @media (max-width: 620px) {
+            .topbar-inner {
+                flex-wrap: wrap;
+                padding: 12px 0;
+            }
+
+            .topbar-search {
+                order: 3;
+                width: 100%;
+                max-width: none;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .field-grid,
+            .address-row {
+                grid-template-columns: 1fr;
+                display: grid;
+            }
+
+            .address-row {
+                gap: 12px;
+            }
+
+            .panel,
+            .summary-card {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <div class="container topbar-inner">
+            <a th:href="@{/}" class="brand">Shopmart</a>
+
+            <form class="topbar-search" th:action="@{/products}" method="get">
+                <i class="ti ti-search"></i>
+                <input type="text" name="keyword" placeholder="Tìm sản phẩm..." />
+            </form>
+
+            <div class="topbar-actions">
+                <a th:href="@{/wishlist}" class="icon-button" aria-label="Wishlist"><i class="ti ti-heart"></i></a>
+                <a th:href="@{/cart}" class="icon-button" aria-label="Giỏ hàng">
+                    <i class="ti ti-shopping-cart"></i>
+                    <span class="badge" th:text="${cartCount != null ? cartCount : 0}">0</span>
+                </a>
+                <a th:href="@{/profile}" class="icon-button" aria-label="Profile"><i class="ti ti-user-circle"></i></a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container page">
+        <div class="breadcrumb">
+            <a th:href="@{/cart}">Giỏ hàng</a>
+            <span>/</span>
+            <span>Thanh toán</span>
+        </div>
+
+        <div class="page-header">
+            <h1>Thanh toán</h1>
+            <div class="stepper">
+                <div class="step"><span class="circle">1</span> Giỏ hàng</div>
+                <div class="step active"><span class="circle">2</span> Thông tin</div>
+                <div class="step"><span class="circle">3</span> Hoàn tất</div>
+            </div>
+        </div>
+
+        <div class="checkout-grid">
+            <div>
+                <form th:action="@{/checkout}" method="post" id="checkoutForm">
+                    <section class="panel">
+                        <div class="panel-head">
+                            <h2 class="panel-title"><i class="ti ti-user"></i> Thông tin người nhận</h2>
+                        </div>
+
+                        <div class="field-grid">
+                            <div class="field">
+                                <label for="fullName">Họ và tên</label>
+                                <input type="text" id="fullName" name="fullName" th:value="${prefillFullName != null ? prefillFullName : ''}" placeholder="Nguyễn Văn A" required />
+                            </div>
+                            <div class="field">
+                                <label for="phone">Số điện thoại</label>
+                                <input type="tel" id="phone" name="phone" th:value="${prefillPhone != null ? prefillPhone : ''}" placeholder="0909 123 456" required />
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="panel">
+                        <div class="panel-head">
+                            <h2 class="panel-title"><i class="ti ti-map-pin"></i> Địa chỉ giao hàng</h2>
+                        </div>
+
+                        <div class="address-row">
+                            <div class="field">
+                                <label for="address">Địa chỉ nhận hàng</label>
+                                <input type="text" id="address" name="address" th:value="${prefillAddress != null ? prefillAddress : ''}" placeholder="Nhập địa chỉ hoặc chọn trên bản đồ" required />
+                            </div>
+                            <button type="button" class="map-button" id="openMapBtn">
+                                <i class="ti ti-map-2"></i> Chọn trên bản đồ
+                            </button>
+                        </div>
+
+                        <div class="field">
+                            <label for="note">Ghi chú</label>
+                            <textarea id="note" name="note" placeholder="Ví dụ: Giao giữa giờ hành chính, gọi trước khi giao..."></textarea>
+                        </div>
+
+                        <input type="hidden" id="lat" name="lat" />
+                        <input type="hidden" id="lng" name="lng" />
+                        <p class="muted-note">Bạn có thể nhập tay hoặc nhấn “Chọn trên bản đồ” để xác định vị trí chính xác hơn.</p>
+                    </section>
+
+                    <section class="panel">
+                        <div class="panel-head">
+                            <h2 class="panel-title"><i class="ti ti-credit-card"></i> Phương thức thanh toán</h2>
+                        </div>
+
+                        <div class="payment-list">
+                            <label class="payment-option active" id="optCod">
+                                <input type="radio" name="paymentMethod" value="COD" checked />
+                                <div class="payment-info">
+                                    <div class="payment-title"><i class="ti ti-truck-delivery"></i> Thanh toán khi nhận hàng</div>
+                                    <div class="payment-desc">Thanh toán bằng tiền mặt hoặc chuyển khoản trực tiếp khi giao hàng.</div>
+                                </div>
+                            </label>
+
+                            <label class="payment-option" id="optTransfer">
+                                <input type="radio" name="paymentMethod" value="TRANSFER" />
+                                <div class="payment-info">
+                                    <div class="payment-title"><i class="ti ti-qrcode"></i> Chuyển khoản ngân hàng</div>
+                                    <div class="payment-desc">Quét mã QR để xác nhận thanh toán nhanh chóng.</div>
+
+                                    <div class="qr-box" id="qrBox">
+                                        <img id="qrImg" src="" alt="QR thanh toán" />
+                                        <div class="qr-grid">
+                                            <div><span>Ngân hàng</span><strong>Vietcombank</strong></div>
+                                            <div><span>Số tài khoản</span><strong>0123456789</strong></div>
+                                            <div><span>Chủ tài khoản</span><strong>SHOPMART JSC</strong></div>
+                                            <div><span>Số tiền</span><strong th:text="${#numbers.formatDecimal(cartSubtotal != null ? cartSubtotal : T(java.math.BigDecimal).ZERO, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</strong></div>
+                                        </div>
+                                        <div class="qr-note"><i class="ti ti-info-circle"></i> Nội dung chuyển khoản có mã đơn hàng</div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </section>
+                </form>
+            </div>
+
+            <aside class="summary-card">
+                <h2>Đơn hàng của bạn</h2>
+
+                <div class="summary-list" th:if="${cartItems != null and !#lists.isEmpty(cartItems)}">
+                    <div class="summary-item" th:each="item : ${cartItems}">
+                        <div class="thumb">
+                            <img th:if="${item.product != null and item.product.imageUrl != null and !#strings.isEmpty(item.product.imageUrl)}"
+                                 th:src="${item.product.imageUrl}"
+                                 th:alt="${item.product.name}" />
+                            <i th:unless="${item.product != null and item.product.imageUrl != null and !#strings.isEmpty(item.product.imageUrl)}"
+                               class="ti ti-shopping-bag"></i>
+                        </div>
+
+                        <div class="summary-info">
+                            <span class="summary-name" th:text="${item.product != null ? item.product.name : 'Sản phẩm'}">Sản phẩm</span>
+                            <div class="summary-meta" th:text="'SL: ' + ${item.quantity}">SL: 1</div>
+                        </div>
+
+                        <div class="summary-price"
+                             th:text="${#numbers.formatDecimal(item.totalPrice, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</div>
+                    </div>
+                </div>
+
+                <div th:if="${cartItems == null or #lists.isEmpty(cartItems)}" class="empty-state">
+                    Giỏ hàng của bạn đang trống.
+                </div>
+
+                <div class="summary-total">
+                    <div class="row">
+                        <span>Tạm tính</span>
+                        <strong th:text="${#numbers.formatDecimal(cartSubtotal != null ? cartSubtotal : T(java.math.BigDecimal).ZERO, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</strong>
+                    </div>
+                    <div class="row">
+                        <span>Phí vận chuyển</span>
+                        <strong>Miễn phí</strong>
+                    </div>
+                    <div class="row total">
+                        <span>Tổng cộng</span>
+                        <strong th:text="${#numbers.formatDecimal(cartSubtotal != null ? cartSubtotal : T(java.math.BigDecimal).ZERO, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</strong>
+                    </div>
+                </div>
+
+                <button type="submit" form="checkoutForm" class="checkout-button">Đặt hàng</button>
+            </aside>
+        </div>
+    </main>
+
+    <div class="map-overlay" id="mapOverlay" aria-label="Bản đồ chọn địa chỉ">
+        <div class="map-modal">
+            <div class="map-header">
+                <h3><i class="ti ti-map-pin"></i> Chọn vị trí giao hàng</h3>
+                <button type="button" class="close-map" id="closeMapBtn" aria-label="Đóng">&times;</button>
+            </div>
+
+            <div class="map-search">
+                <input type="text" id="mapSearchInput" placeholder="Tìm địa chỉ, tên đường, tòa nhà..." />
+                <button type="button" id="mapSearchBtn"><i class="ti ti-search"></i></button>
+            </div>
+
+            <div id="map"></div>
+
+            <div class="map-footer">
+                <div class="map-address">
+                    <strong>Vị trí đã chọn:</strong>
+                    <span id="pickedAddressText">Nhấp vào bản đồ hoặc tìm kiếm để chọn vị trí.</span>
+                </div>
+                <button type="button" class="confirm-location" id="confirmLocationBtn" disabled>Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+      /*<![CDATA[*/
+       var orderTotal = /*[[${cartSubtotal != null ? cartSubtotal.doubleValue() : 0.0}]]*/ 0.0;
+       var orderCode = 'DH' + Date.now().toString().slice(-8);
+      /*]]>*/
+    </script>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const optCod = document.getElementById('optCod');
+        const optTransfer = document.getElementById('optTransfer');
+        const qrBox = document.getElementById('qrBox');
+        const qrImg = document.getElementById('qrImg');
+
+        function buildQrUrl() {
+            const bankId = 'VCB';
+            const accountNo = '0123456789';
+            const accountName = encodeURIComponent('SHOPMART JSC');
+            const info = encodeURIComponent('Thanh toan don hang ' + orderCode);
+            return `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.png?amount=${orderTotal}&addInfo=${info}&accountName=${accountName}`;
+        }
+
+        function selectPayment(method) {
+            const active = method === 'TRANSFER';
+            optCod.classList.toggle('active', !active);
+            optTransfer.classList.toggle('active', active);
+
+            if (active) {
+                qrImg.src = buildQrUrl();
+                qrBox.classList.add('show');
+            } else {
+                qrBox.classList.remove('show');
+            }
+        }
+
+        optCod.addEventListener('click', () => {
+            optCod.querySelector('input').checked = true;
+            selectPayment('COD');
+        });
+
+        optTransfer.addEventListener('click', () => {
+            optTransfer.querySelector('input').checked = true;
+            selectPayment('TRANSFER');
+        });
+
+        const mapOverlay = document.getElementById('mapOverlay');
+        const openMapBtn = document.getElementById('openMapBtn');
+        const closeMapBtn = document.getElementById('closeMapBtn');
+        const confirmBtn = document.getElementById('confirmLocationBtn');
+        const pickedAddressText = document.getElementById('pickedAddressText');
+        const searchInput = document.getElementById('mapSearchInput');
+        const searchBtn = document.getElementById('mapSearchBtn');
+        const addressInput = document.getElementById('address');
+        const latInput = document.getElementById('lat');
+        const lngInput = document.getElementById('lng');
+
+        let map;
+        let marker;
+        let selectedLat = null;
+        let selectedLng = null;
+        let selectedAddress = '';
+
+        function initMap() {
+            if (map) return;
+            map = L.map('map').setView([21.0285, 105.8542], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            map.on('click', (e) => {
+                setMarker(e.latlng.lat, e.latlng.lng);
+                reverseGeocode(e.latlng.lat, e.latlng.lng);
+            });
+        }
+
+        function setMarker(lat, lng) {
+            if (!map) return;
+            if (marker) {
+                map.removeLayer(marker);
+            }
+            marker = L.marker([lat, lng]).addTo(map);
+            map.setView([lat, lng], 16);
+            selectedLat = lat;
+            selectedLng = lng;
+        }
+
+        async function reverseGeocode(lat, lng) {
+            pickedAddressText.textContent = 'Đang xác định địa chỉ...';
+            confirmBtn.disabled = true;
+            try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`);
+                const data = await res.json();
+                selectedAddress = data.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+                pickedAddressText.textContent = selectedAddress;
+                confirmBtn.disabled = false;
+            } catch (error) {
+                pickedAddressText.textContent = 'Không thể xác định địa chỉ, vui lòng thử lại.';
+            }
+        }
+
+        async function searchAddress() {
+            const query = searchInput.value.trim();
+            if (!query) return;
+            pickedAddressText.textContent = 'Đang tìm kiếm...';
+            try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+                const data = await res.json();
+                if (data.length > 0) {
+                    const result = data[0];
+                    setMarker(parseFloat(result.lat), parseFloat(result.lon));
+                    selectedAddress = result.display_name;
+                    pickedAddressText.textContent = selectedAddress;
+                    confirmBtn.disabled = false;
+                } else {
+                    pickedAddressText.textContent = 'Không tìm thấy địa chỉ phù hợp.';
+                }
+            } catch (error) {
+                pickedAddressText.textContent = 'Có lỗi khi tìm kiếm, vui lòng thử lại.';
+            }
+        }
+
+        openMapBtn.addEventListener('click', () => {
+            mapOverlay.classList.add('show');
+            setTimeout(() => {
+                initMap();
+                if (map) map.invalidateSize();
+            }, 100);
+        });
+
+        closeMapBtn.addEventListener('click', () => mapOverlay.classList.remove('show'));
+        mapOverlay.addEventListener('click', (event) => {
+            if (event.target === mapOverlay) mapOverlay.classList.remove('show');
+        });
+
+        searchBtn.addEventListener('click', searchAddress);
+        searchInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                searchAddress();
+            }
+        });
+
+        confirmBtn.addEventListener('click', () => {
+            addressInput.value = selectedAddress;
+            latInput.value = selectedLat;
+            lngInput.value = selectedLng;
+            mapOverlay.classList.remove('show');
+        });
+    </script>
+</body>
+</html>

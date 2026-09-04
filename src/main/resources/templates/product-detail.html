@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title th:text="${product.name} + ' - Shopmart'">Chi tiết sản phẩm - Shopmart</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  :root {
+    --coral: #D85A30;
+    --coral-light: #FAECE7;
+    --coral-dark: #4A1B0C;
+    --amber: #EF9F27;
+    --text-primary: #1F1D1A;
+    --text-secondary: #6B6862;
+    --text-muted: #9B968D;
+    --surface-0: #F7F5F1;
+    --surface-1: #FFFFFF;
+    --border: #E8E4DC;
+    --border-strong: #D6D1C6;
+    --radius: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--surface-0);
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+
+  a { text-decoration: none; color: inherit; }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* ---------- Header (giống main.html) ---------- */
+  header {
+    background: var(--surface-1);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    gap: 20px;
+  }
+
+  .logo { font-size: 20px; font-weight: 700; color: var(--coral); white-space: nowrap; }
+
+  .search-box {
+    flex: 1;
+    max-width: 480px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface-0);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 14px;
+  }
+
+  .search-box i { color: var(--text-muted); font-size: 16px; }
+  .search-box input { border: none; background: transparent; outline: none; font-size: 14px; width: 100%; color: var(--text-primary); }
+
+  .header-icons { display: flex; align-items: center; gap: 20px; }
+
+  .header-user {
+    font-size: 13px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .header-user a { color: var(--coral); font-weight: 600; }
+
+  .icon-btn { position: relative; font-size: 20px; color: var(--text-secondary); display: flex; }
+  .icon-btn:hover { color: var(--coral); }
+
+  .badge {
+    position: absolute; top: -6px; right: -8px;
+    background: var(--coral); color: #fff;
+    font-size: 10px; font-weight: 700;
+    min-width: 16px; height: 16px; border-radius: 999px;
+    display: flex; align-items: center; justify-content: center; padding: 0 3px;
+  }
+
+  .flash-message {
+    margin-top: 16px;
+    background: var(--coral-dark);
+    color: #fff;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ---------- Breadcrumb ---------- */
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 20px 0;
+  }
+
+  .breadcrumb a { color: var(--text-secondary); }
+  .breadcrumb a:hover { color: var(--coral); }
+  .breadcrumb .current { color: var(--text-primary); font-weight: 500; }
+
+  /* ---------- Product detail layout ---------- */
+  .product-detail {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 48px;
+  }
+
+  .product-gallery {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    height: 380px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .product-gallery img.main-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .product-gallery i.main-icon { font-size: 96px; color: var(--text-muted); }
+
+  .product-gallery-tag {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    background: var(--amber);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 4px;
+  }
+
+  .product-summary-name {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .product-summary-rating {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 18px;
+  }
+
+  .product-summary-rating i { color: var(--amber); font-size: 15px; }
+
+  .product-summary-price {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 18px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+
+  .product-summary-price .price { font-size: 28px; font-weight: 700; color: var(--coral-dark); }
+  .product-summary-price .price-old { font-size: 15px; color: var(--text-muted); text-decoration: line-through; }
+  .product-summary-price .discount-badge {
+    background: var(--coral-light);
+    color: var(--coral);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .rating-box {
+    margin: 22px 0 14px;
+    padding: 16px 18px;
+    border: 1px solid var(--border);
+    background: var(--surface-1);
+    border-radius: var(--radius);
+  }
+
+  .rating-box h3 {
+    margin-bottom: 12px;
+    font-size: 15px;
+  }
+
+  .rating-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .rating-form select {
+    min-width: 120px;
+    padding: 9px 12px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-strong);
+    font-size: 14px;
+  }
+
+  .product-summary-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 22px;
+  }
+
+  .stock-info {
+    font-size: 13px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .stock-info.in-stock { color: #2E7D32; }
+  .stock-info.out-stock { color: var(--coral); }
+
+  .add-to-cart-form {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .qty-input {
+    width: 70px;
+    padding: 10px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    font-size: 14px;
+    text-align: center;
+  }
+
+  .btn-primary {
+    background: var(--coral);
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-primary:hover { background: #C24E27; }
+
+  .btn-secondary {
+    background: var(--surface-1);
+    color: var(--text-primary);
+    border: 1px solid var(--border-strong);
+    padding: 12px 24px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .btn-secondary:hover { border-color: var(--coral); color: var(--coral); }
+
+  /* ---------- Related products ---------- */
+  .section-title { font-size: 18px; font-weight: 700; margin-bottom: 14px; }
+
+  .products {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+    margin-bottom: 40px;
+  }
+
+  .product-card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .product-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.06); }
+
+  .product-image {
+    height: 150px;
+    background: var(--surface-0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .product-image i { font-size: 40px; color: var(--text-muted); }
+
+  .product-tag {
+    position: absolute; top: 10px; left: 10px;
+    background: var(--amber); color: #fff;
+    font-size: 11px; font-weight: 700;
+    padding: 3px 8px; border-radius: 4px;
+  }
+
+  .product-info { padding: 14px; }
+  .product-name { font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+  .product-price-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+  .price { font-size: 16px; font-weight: 700; color: var(--coral-dark); }
+  .price-old { font-size: 12px; color: var(--text-muted); text-decoration: line-through; }
+
+  .product-rating { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; }
+  .product-rating i { color: var(--amber); font-size: 13px; }
+
+  .mini-add-form { margin: 0; }
+
+  .btn-add {
+    width: 100%;
+    background: var(--surface-0);
+    border: 1px solid var(--border-strong);
+    color: var(--text-primary);
+    padding: 9px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .btn-add:hover { background: var(--coral); border-color: var(--coral); color: #fff; }
+
+  @media (max-width: 700px) {
+    .product-detail { grid-template-columns: 1fr; }
+    .search-box { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a th:href="@{/}" class="logo">Shopmart</a>
+
+    <form class="search-box" th:action="@{/products}" method="get">
+      <i class="ti ti-search"></i>
+      <input type="text" name="keyword" placeholder="Tìm sản phẩm...">
+    </form>
+
+    <div class="header-icons">
+      <a th:href="@{/wishlist}" class="icon-btn" aria-label="Yêu thích"><i class="ti ti-heart"></i></a>
+      <a th:href="@{/cart}" class="icon-btn" aria-label="Giỏ hàng">
+        <i class="ti ti-shopping-cart"></i>
+        <span class="badge" th:text="${cartCount != null} ? ${cartCount} : 0">0</span>
+      </a>
+      <div class="header-user" th:if="${currentUser != null}">
+        <i class="ti ti-user"></i>
+        <span>Xin chào, <strong th:text="${currentUser.fullName != null ? currentUser.fullName : currentUser.email}">user</strong></span>
+        <a th:href="@{/logout}">Đăng xuất</a>
+      </div>
+      <a th:unless="${currentUser != null}" th:href="@{/auth(mode='login')}" class="header-user">Đăng nhập</a>
+      <a th:href="@{/profile}" class="icon-btn" aria-label="Thông tin"><i class="ti ti-id"></i></a>
+    </div>
+  </div>
+</header>
+
+<div class="container" th:if="${message}">
+  <div class="flash-message">
+    <i class="ti ti-check"></i>
+    <span th:text="${message}"></span>
+  </div>
+</div>
+
+<main class="container">
+
+  <nav class="breadcrumb">
+    <a th:href="@{/}">Trang chủ</a>
+    <span>/</span>
+    <a th:href="@{/products(categoryId=${product.category.id})}" th:text="${product.category.name}">Danh mục</a>
+    <span>/</span>
+    <span class="current" th:text="${product.name}">Tên sản phẩm</span>
+  </nav>
+
+  <section class="product-detail">
+
+    <div class="product-gallery">
+      <span class="product-gallery-tag" th:if="${product.discountPercent != null and product.discountPercent > 0}"
+            th:text="'-' + ${product.discountPercent} + '%'"></span>
+      <img th:if="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)}"
+           th:src="${product.imageUrl}"
+           th:alt="${product.name}"
+           class="main-image" />
+      <i th:unless="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)}"
+         class="ti main-icon"
+         th:classappend="${product.icon != null ? product.icon : 'ti-package'}"></i>
+    </div>
+
+    <div class="product-summary">
+      <h1 class="product-summary-name" th:text="${product.name}">Tên sản phẩm</h1>
+
+      <div class="product-summary-rating">
+        <i class="ti ti-star"></i>
+        <span th:if="${product.rating != null and product.reviewCount != null and product.reviewCount > 0}"
+              th:text="${product.rating} + ' · ' + ${product.reviewCount} + ' đánh giá'"></span>
+        <span th:unless="${product.rating != null and product.reviewCount != null and product.reviewCount > 0}">Chưa có đánh giá</span>
+      </div>
+
+      <div class="product-summary-price">
+        <span class="price"
+              th:text="${#numbers.formatDecimal((product.discountPercent != null && product.discountPercent > 0) ? product.discountedPrice : product.price, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</span>
+        <span class="price-old"
+              th:if="${product.oldPrice != null || (product.discountPercent != null && product.discountPercent > 0)}"
+              th:text="${#numbers.formatDecimal(product.oldPrice != null ? product.oldPrice : product.price, 0, 'COMMA', 0, 'POINT')} + 'đ'"></span>
+        <span class="discount-badge" th:if="${product.discountPercent != null and product.discountPercent > 0}"
+              th:text="'Tiết kiệm ' + ${product.discountPercent} + '%'"></span>
+      </div>
+
+      <p class="product-summary-desc" th:text="${product.description}">
+        Mô tả chi tiết sản phẩm sẽ hiển thị ở đây.
+      </p>
+
+      <p class="stock-info in-stock" th:if="${product.stockQuantity != null and product.stockQuantity > 0}">
+        <i class="ti ti-circle-check"></i>
+        <span th:text="'Còn hàng (' + ${product.stockQuantity} + ' sản phẩm)'">Còn hàng</span>
+      </p>
+      <p class="stock-info out-stock" th:if="${product.stockQuantity == null or product.stockQuantity == 0}">
+        <i class="ti ti-circle-x"></i>
+        <span>Hết hàng</span>
+      </p>
+
+      <div class="add-to-cart-form">
+        <form th:action="@{/cart/add}" method="post" style="display:flex; align-items:center; gap:12px; margin:0;">
+          <input type="hidden" name="productId" th:value="${product.id}">
+          <input type="number" name="quantity" value="1" min="1"
+                 th:max="${product.stockQuantity}" class="qty-input">
+          <button type="submit" class="btn-primary"
+                  th:disabled="${product.stockQuantity == null or product.stockQuantity == 0}">
+            <i class="ti ti-shopping-cart-plus"></i>
+            Thêm vào giỏ
+          </button>
+        </form>
+
+        <form th:action="@{/wishlist/add}" method="post" style="display:inline-block; margin:0;">
+          <input type="hidden" name="productId" th:value="${product.id}">
+          <button type="submit" class="btn-secondary">
+            <i class="ti ti-heart"></i>
+            Yêu thích
+          </button>
+        </form>
+
+        <a th:href="@{/}" class="btn-secondary">Tiếp tục mua sắm</a>
+      </div>
+
+      <div class="rating-box">
+        <h3>Đánh giá sản phẩm</h3>
+
+        <div th:if="${currentUser == null}">
+          <p style="margin-bottom: 10px; color: var(--text-secondary);">Bạn cần đăng nhập để gửi đánh giá.</p>
+          <a th:href="@{/auth(mode='login')}" class="btn-primary" style="display:inline-block; text-align:center;">Đăng nhập để đánh giá</a>
+        </div>
+
+        <form th:if="${currentUser != null and myReview == null}"
+              th:action="@{/products/{id}/rate(id=${product.id})}" method="post" class="rating-form">
+          <select name="ratingValue" aria-label="Chọn số sao">
+            <option value="5">5 sao</option>
+            <option value="4">4 sao</option>
+            <option value="3">3 sao</option>
+            <option value="2">2 sao</option>
+            <option value="1">1 sao</option>
+          </select>
+          <button type="submit" class="btn-primary">Gửi đánh giá</button>
+        </form>
+
+        <p th:if="${currentUser != null and myReview != null}" style="color: var(--text-secondary); margin-top: 6px;">
+          Bạn đã đánh giá sản phẩm này. Mỗi tài khoản chỉ được đánh giá 1 lần.
+        </p>
+      </div>
+    </div>
+
+  </section>
+
+  <section th:if="${relatedProducts != null and !#lists.isEmpty(relatedProducts)}">
+    <h2 class="section-title">Sản phẩm liên quan</h2>
+    <div class="products">
+      <div class="product-card" th:each="p : ${relatedProducts}">
+        <div class="product-image">
+          <span class="product-tag" th:if="${p.discountPercent != null}"
+                th:text="'-' + ${p.discountPercent} + '%'"></span>
+          <img th:if="${p.imageUrl != null and !#strings.isEmpty(p.imageUrl)}"
+               th:src="${p.imageUrl}"
+               th:alt="${p.name}"
+               style="width: 100%; height: 100%; object-fit: cover;" />
+          <i th:unless="${p.imageUrl != null and !#strings.isEmpty(p.imageUrl)}"
+             class="ti"
+             th:classappend="${p.icon != null ? p.icon : 'ti-package'}"></i>
+        </div>
+        <div class="product-info">
+          <a th:href="@{/products/{id}(id=${p.id})}" style="display:block;">
+            <p class="product-name" th:text="${p.name}">Tên sản phẩm</p>
+          </a>
+          <div class="product-price-row">
+            <span class="price"
+                  th:text="${#numbers.formatDecimal((p.discountPercent != null && p.discountPercent > 0) ? p.discountedPrice : p.price, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</span>
+            <span class="price-old"
+                  th:if="${p.oldPrice != null || (p.discountPercent != null && p.discountPercent > 0)}"
+                  th:text="${#numbers.formatDecimal(p.oldPrice != null ? p.oldPrice : p.price, 0, 'COMMA', 0, 'POINT')} + 'đ'"></span>
+          </div>
+          <div class="product-rating">
+            <i class="ti ti-star"></i>
+            <span th:if="${p.rating != null and p.reviewCount != null}"
+                  th:text="${p.rating} + ' (' + ${p.reviewCount} + ')'">0 (0)</span>
+            <span th:unless="${p.rating != null and p.reviewCount != null}">Chưa có đánh giá</span>
+          </div>
+          <form th:action="@{/cart/add}" method="post" class="mini-add-form">
+            <input type="hidden" name="productId" th:value="${p.id}">
+            <input type="hidden" name="quantity" value="1">
+            <button type="submit" class="btn-add">
+              <i class="ti ti-shopping-cart-plus"></i>
+              <span>Thêm vào giỏ</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+</body>
+</html>

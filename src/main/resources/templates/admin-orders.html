@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quản trị - Đơn hàng</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  :root { --coral: #D85A30; --coral-light: #FAECE7; --coral-dark: #4A1B0C; --amber: #EF9F27; --text-primary: #1F1D1A; --text-secondary: #6B6862; --text-muted: #9B968D; --surface-0: #F7F5F1; --surface-1: #FFFFFF; --border: #E8E4DC; --border-strong: #D6D1C6; --radius: 8px; --sidebar-bg: #211D19; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--surface-0); color: var(--text-primary); line-height: 1.5; }
+  a { text-decoration: none; color: inherit; }
+  .admin-wrap { display: flex; min-height: 100vh; }
+  .sidebar { width: 232px; flex-shrink: 0; background: var(--sidebar-bg); color: #D8D3C9; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+  .sidebar .brand { padding: 20px; font-size: 18px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .sidebar .brand i { color: var(--coral); font-size: 22px; }
+  .sidebar nav { padding: 12px 0; }
+  .sidebar nav a { display: flex; align-items: center; gap: 10px; padding: 11px 20px; font-size: 14px; color: #B8B2A6; border-left: 3px solid transparent; }
+  .sidebar nav a i { font-size: 18px; width: 18px; }
+  .sidebar nav a:hover { background: rgba(255,255,255,0.05); color: #fff; }
+  .sidebar nav a.active { background: rgba(216,90,48,0.16); color: #fff; border-left-color: var(--coral); font-weight: 600; }
+  .sidebar .divider { height: 1px; background: rgba(255,255,255,0.08); margin: 10px 20px; }
+  .sidebar .back-link { display: block; padding: 12px 20px; font-size: 13px; color: #9B958A; }
+  .sidebar .back-link:hover { color: #fff; }
+  .main { flex: 1; min-width: 0; }
+  .topbar { background: var(--surface-1); border-bottom: 1px solid var(--border); padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+  .topbar h1 { font-size: 19px; font-weight: 700; }
+  .topbar .admin-name { font-size: 13px; color: var(--text-secondary); }
+  .topbar .admin-name strong { color: var(--text-primary); }
+  .content { padding: 26px 28px 60px; max-width: 1400px; }
+  .flash { background: #DEF7E3; color: #1B8A3B; border: 1px solid #B9E9C4; padding: 10px 16px; border-radius: var(--radius); margin-bottom: 18px; font-size: 14px; }
+  .panel { background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; margin-bottom: 20px; }
+  .filter-form { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+  .filter-form input, .filter-form select { padding: 9px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius); font-size: 13.5px; background: var(--surface-1); }
+  .filter-form button { padding: 9px 18px; background: var(--surface-0); border: 1px solid var(--border-strong); border-radius: var(--radius); font-size: 13.5px; cursor: pointer; }
+  .filter-form a.reset { font-size: 13px; color: var(--text-secondary); }
+  .count-note { font-size: 13.5px; color: var(--text-secondary); margin: 12px 0; }
+  table.data-table { width: 100%; border-collapse: collapse; }
+  .data-table th { text-align: left; font-size: 11.5px; text-transform: uppercase; color: var(--text-secondary); padding: 10px; border-bottom: 1px solid var(--border); }
+  .data-table td { padding: 10px; border-bottom: 1px solid var(--border); font-size: 13.5px; vertical-align: middle; }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: var(--surface-0); }
+  .pay-badge { display: inline-block; padding: 4px 8px; border-radius: 999px; background: #F7F0E6; color: #7A4B15; font-size: 12px; }
+  .badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+  .badge-CHO_XAC_NHAN { background:#FFF3D6; color:#8A6100; }
+  .badge-CHO_THANH_TOAN { background:#FDEBDD; color:#B85C00; }
+  .badge-DA_THANH_TOAN { background:#DCEEFB; color:#0B5FA5; }
+  .badge-DA_XAC_NHAN { background:#E6E9FD; color:#3A3FC4; }
+  .badge-DANG_GIAO { background:#E3F1FF; color:#0B72C4; }
+  .badge-HOAN_THANH { background:#DEF7E3; color:#1B8A3B; }
+  .badge-DA_HUY { background:#FBE1DE; color:#C23B2B; }
+  .view-link { color: var(--coral); font-size: 12.5px; }
+  .empty-note { color: var(--text-muted); font-size: 13.5px; padding: 20px 0; text-align: center; }
+  .grid-2 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 20px; align-items: start; }
+  @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+  .info-row { display: flex; justify-content: space-between; padding: 7px 0; font-size: 13.5px; border-bottom: 1px dashed var(--border); }
+  .info-row:last-child { border-bottom: none; }
+  .info-row .k { color: var(--text-secondary); }
+  .info-row .v { font-weight: 600; text-align: right; max-width: 60%; }
+  .item-table { width: 100%; border-collapse: collapse; }
+  .item-table th { text-align: left; font-size: 11.5px; text-transform: uppercase; color: var(--text-secondary); padding: 8px 6px; border-bottom: 1px solid var(--border); }
+  .item-table td { padding: 10px 6px; border-bottom: 1px solid var(--border); font-size: 13.5px; }
+  .item-table tr:last-child td { border-bottom: none; }
+  .btn-save { margin-top: 16px; width: 100%; padding: 11px; background: var(--coral); color: #fff; border: none; border-radius: var(--radius); font-size: 14px; font-weight: 700; cursor: pointer; }
+  .btn-save:hover { background: var(--coral-dark); }
+  label { display:block; font-size: 12.5px; color: var(--text-secondary); margin-bottom: 5px; margin-top: 12px; }
+  label:first-child { margin-top: 0; }
+  select, textarea, input[type=text] { width: 100%; padding: 9px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius); font-size: 13.5px; font-family: inherit; }
+  textarea { resize: vertical; min-height: 60px; }
+</style>
+</head>
+<body>
+<div class="admin-wrap">
+  <aside class="sidebar">
+    <div class="brand"><i class="ti ti-shopping-bag"></i> Shopmart Admin</div>
+    <nav>
+      <a th:href="@{/admin}"><i class="ti ti-layout-dashboard"></i> Tổng quan</a>
+      <a th:href="@{/admin/orders}" class="active"><i class="ti ti-receipt"></i> Đơn hàng</a>
+      <a th:href="@{/admin/products}"><i class="ti ti-package"></i> Sản phẩm</a>
+      <a th:href="@{/admin/categories}"><i class="ti ti-category"></i> Danh mục</a>
+      <a th:href="@{/admin/banners}"><i class="ti ti-ad-2"></i> Quảng cáo</a>
+      <a th:href="@{/admin/revenue}"><i class="ti ti-chart-line"></i> Doanh thu</a>
+    </nav>
+    <div class="divider"></div>
+    <a th:href="@{/}" class="back-link"><i class="ti ti-arrow-left"></i> Về trang bán hàng</a>
+    <a th:href="@{/logout}" class="back-link"><i class="ti ti-logout"></i> Đăng xuất</a>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <h1>Đơn hàng</h1>
+      <div class="admin-name">Xin chào, <strong th:text="${currentUser != null and currentUser.fullName != null ? currentUser.fullName : (currentUser != null ? currentUser.email : 'admin')}">admin</strong></div>
+    </div>
+
+    <div class="content">
+      <div class="flash" th:if="${message}" th:text="${message}"></div>
+
+      <div th:if="${order == null}">
+        <div class="panel">
+          <form class="filter-form" method="get" th:action="@{/admin/orders}">
+            <input type="text" name="keyword" placeholder="Tìm theo mã đơn, tên khách, SĐT..." th:value="${keyword}">
+            <select name="status">
+              <option value="">Tất cả trạng thái</option>
+              <option th:each="s : ${statusList}" th:value="${s}" th:text="${statusLabels.get(s)}" th:selected="${s == status}"></option>
+            </select>
+            <select name="paymentMethod">
+              <option value="">Tất cả thanh toán</option>
+              <option value="COD" th:selected="${paymentMethod == 'COD'}">COD</option>
+              <option value="TRANSFER" th:selected="${paymentMethod == 'TRANSFER'}">Chuyển khoản</option>
+            </select>
+            <button type="submit"><i class="ti ti-filter"></i> Lọc</button>
+            <a class="reset" th:href="@{/admin/orders}">Xóa lọc</a>
+          </form>
+
+          <div class="count-note" th:text="'Tìm thấy ' + ${orders.size()} + ' đơn hàng'">0 đơn hàng</div>
+
+          <table class="data-table" th:if="${!orders.isEmpty()}">
+            <thead>
+              <tr>
+                <th>Mã đơn</th><th>Khách hàng</th><th>SĐT</th><th>Tổng tiền</th>
+                <th>Thanh toán</th><th>Trạng thái</th><th>Ngày đặt</th><th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="o : ${orders}">
+                <td th:text="${o.orderCode}">DH...</td>
+                <td th:text="${o.fullName}">Khách</td>
+                <td th:text="${o.phone}">--</td>
+                <td th:text="${#numbers.formatDecimal(o.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</td>
+                <td>
+                  <span class="pay-badge" th:text="${o.paymentMethod == 'TRANSFER'} ? 'Chuyển khoản' : 'COD'">COD</span>
+                  <span th:if="${o.paid}" style="color:#1B8A3B; font-size:11px;">· Đã thu tiền</span>
+                </td>
+                <td><span th:class="'badge badge-' + ${o.status}" th:text="${statusLabels.get(o.status)}">--</span></td>
+                <td th:text="${#temporals.format(o.createdAt, 'dd/MM/yyyy HH:mm')}">--</td>
+                <td><a class="view-link" th:href="@{/admin/orders/{id}(id=${o.id})}">Xem →</a></td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="empty-note" th:if="${orders.isEmpty()}">Không tìm thấy đơn hàng nào phù hợp.</p>
+        </div>
+      </div>
+
+      <div th:if="${order != null}">
+        <a class="view-link" th:href="@{/admin/orders}">&larr; Quay lại danh sách</a>
+        <div class="grid-2" style="margin-top: 18px;">
+          <div class="panel">
+            <h2>Thông tin đơn hàng</h2>
+            <div class="info-row"><span class="k">Mã đơn</span><span class="v" th:text="${order.orderCode}">--</span></div>
+            <div class="info-row"><span class="k">Khách hàng</span><span class="v" th:text="${order.fullName}">--</span></div>
+            <div class="info-row"><span class="k">Số điện thoại</span><span class="v" th:text="${order.phone}">--</span></div>
+            <div class="info-row"><span class="k">Địa chỉ</span><span class="v" th:text="${order.address}">--</span></div>
+            <div class="info-row"><span class="k">Phương thức</span><span class="v" th:text="${order.paymentMethod}">--</span></div>
+            <div class="info-row"><span class="k">Ngày đặt</span><span class="v" th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">--</span></div>
+          </div>
+
+          <div class="panel">
+            <h2>Cập nhật trạng thái</h2>
+            <form method="post" th:action="@{/admin/orders/{id}/status(id=${order.id})}">
+              <label>Trạng thái</label>
+              <select name="newStatus">
+                <option th:each="s : ${statusList}" th:value="${s}" th:text="${statusLabels.get(s)}" th:selected="${s == order.status}"></option>
+              </select>
+
+              <label>Mã vận đơn</label>
+              <input type="text" name="trackingCode" th:value="${order.trackingCode}" placeholder="VD: GH123456789">
+
+              <label>Ghi chú của admin</label>
+              <textarea name="adminNote" th:text="${order.adminNote}"></textarea>
+
+              <label>Lý do hủy</label>
+              <textarea name="cancelReason" th:text="${order.cancelReason}"></textarea>
+
+              <button type="submit" class="btn-save">Cập nhật</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top: 20px;">
+          <h2>Sản phẩm trong đơn</h2>
+          <table class="item-table" th:if="${order.items != null and !order.items.isEmpty()}">
+            <thead>
+              <tr><th>Sản phẩm</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th></tr>
+            </thead>
+            <tbody>
+              <tr th:each="item : ${order.items}">
+                <td th:text="${item.product != null ? item.product.name : 'Sản phẩm'}">Sản phẩm</td>
+                <td th:text="${item.quantity}">1</td>
+                <td th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</td>
+                <td th:text="${#numbers.formatDecimal(item.totalPrice, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

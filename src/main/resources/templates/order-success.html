@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đặt hàng thành công - Shopmart</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  :root {
+    --coral: #D85A30;
+    --coral-light: #FAECE7;
+    --coral-dark: #4A1B0C;
+    --text-primary: #1F1D1A;
+    --text-secondary: #6B6862;
+    --text-muted: #9B968D;
+    --surface-0: #F7F5F1;
+    --surface-1: #FFFFFF;
+    --border: #E8E4DC;
+    --radius: 8px;
+    --green: #2E9E5B;
+    --green-light: #E8F6EE;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--surface-0); color: var(--text-primary); line-height: 1.5; }
+  a { text-decoration: none; color: inherit; }
+  .container { max-width: 720px; margin: 0 auto; padding: 0 20px; }
+
+  header { background: var(--surface-1); border-bottom: 1px solid var(--border); }
+  .header-inner { max-width: 1100px; margin: 0 auto; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; }
+  .logo { font-size: 20px; font-weight: 700; color: var(--coral); }
+
+  .success-card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 36px 28px;
+    margin: 40px 0;
+    text-align: center;
+  }
+
+  .success-icon {
+    width: 64px; height: 64px;
+    background: var(--green-light);
+    color: var(--green);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    margin: 0 auto 16px;
+  }
+
+  .success-card h1 { font-size: 20px; margin-bottom: 6px; }
+  .success-card p { color: var(--text-secondary); font-size: 13.5px; }
+  .order-code { color: var(--coral); font-weight: 700; }
+
+  .order-box {
+    text-align: left;
+    background: var(--surface-0);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-top: 24px;
+  }
+
+  .order-row { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; border-bottom: 1px dashed var(--border); }
+  .order-row:last-child { border-bottom: none; }
+  .order-row span:first-child { color: var(--text-muted); }
+  .order-row span:last-child { font-weight: 600; }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--coral-light);
+    color: var(--coral-dark);
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+
+  .status-pill.paid { background: var(--green-light); color: #085041; }
+
+  .qr-section {
+    margin-top: 24px;
+    padding: 20px;
+    border: 1px dashed var(--border-strong, #D6D1C6);
+    border-radius: var(--radius);
+    background: var(--surface-0);
+  }
+
+  .qr-section img { width: 200px; height: 200px; border-radius: 8px; border: 1px solid var(--border); background: #fff; padding: 6px; }
+  .qr-section h3 { font-size: 14px; margin-bottom: 12px; }
+
+  .bank-info { text-align: left; max-width: 260px; margin: 14px auto 0; font-size: 12.5px; }
+  .bank-info div { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed var(--border); color: var(--text-secondary); }
+  .bank-info div span:last-child { font-weight: 700; color: var(--text-primary); }
+
+  .actions { margin-top: 28px; display: flex; gap: 12px; justify-content: center; }
+  .btn { padding: 11px 22px; border-radius: var(--radius); font-size: 13.5px; font-weight: 600; cursor: pointer; border: none; }
+  .btn-primary { background: var(--coral); color: #fff; }
+  .btn-primary:hover { background: #C24E27; }
+  .btn-secondary { background: var(--surface-1); color: var(--text-primary); border: 1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a th:href="@{/}" class="logo">Shopmart</a>
+  </div>
+</header>
+
+<main class="container">
+  <div class="success-card">
+    <div class="success-icon"><i class="ti ti-check"></i></div>
+    <h1>Đặt hàng thành công!</h1>
+    <p>Mã đơn hàng của bạn: <span class="order-code" th:text="${order.orderCode}">DH000000</span></p>
+
+    <div class="order-box">
+      <div class="order-row"><span>Người nhận</span><span th:text="${order.fullName}">-</span></div>
+      <div class="order-row"><span>Số điện thoại</span><span th:text="${order.phone}">-</span></div>
+      <div class="order-row"><span>Địa chỉ giao hàng</span><span th:text="${order.address}">-</span></div>
+      <div class="order-row">
+        <span>Phương thức thanh toán</span>
+        <span th:text="${order.paymentMethod == 'TRANSFER'} ? 'Chuyển khoản ngân hàng' : 'Thanh toán khi nhận hàng (COD)'">-</span>
+      </div>
+      <div class="order-row"><span>Tổng tiền</span>
+        <span th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</span>
+      </div>
+      <div class="order-row" th:if="${order.paymentMethod == 'TRANSFER'}">
+        <span>Thanh toán chuyển khoản</span>
+        <span class="status-pill paid"><i class="ti ti-check"></i> Đã nhận được tiền</span>
+      </div>
+      <div class="order-row" th:if="${order.paymentMethod == 'TRANSFER' and order.paidAt != null}">
+        <span>Thời gian thanh toán</span>
+        <span th:text="${#temporals.format(order.paidAt, 'HH:mm dd/MM/yyyy')}">-</span>
+      </div>
+      <div class="order-row">
+        <span>Trạng thái đơn hàng</span>
+        <span class="status-pill"
+              th:text="${order.status == 'DA_THANH_TOAN'} ? 'Đã thanh toán - chờ xử lý' : 'Chờ xác nhận'">Chờ xác nhận</span>
+      </div>
+    </div>
+
+    <div class="actions">
+      <a th:href="@{/}" class="btn btn-secondary">Tiếp tục mua sắm</a>
+      <a th:href="@{/profile}" class="btn btn-primary">Xem đơn hàng của tôi</a>
+    </div>
+  </div>
+</main>
+
+</body>
+</html>
