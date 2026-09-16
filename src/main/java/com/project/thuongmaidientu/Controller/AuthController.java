@@ -2,7 +2,11 @@ package com.project.thuongmaidientu.Controller;
 
 import com.project.thuongmaidientu.Model.User;
 import com.project.thuongmaidientu.Repository.UserRepository;
+import com.project.thuongmaidientu.Security.JwtUtils;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,10 +20,12 @@ public class AuthController {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtils jwtUtils;
 
-    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtUtils = jwtUtils;
     }
 
     @GetMapping("/auth")
@@ -34,12 +40,11 @@ public class AuthController {
     @PostMapping("/auth/login")
     public String login(@RequestParam String email,
                         @RequestParam String password,
-                        HttpSession session,
+                        HttpServletResponse response,
                         RedirectAttributes ra) {
         User user = userRepository.findByEmail(email).orElse(null);
         if (user != null && passwordEncoder.matches(password, user.getPassword())) {
-            session.setAttribute("currentUser", user);
-            session.setAttribute("loggedUser", user);
+            issueTokenCookie(user, response);
             ra.addFlashAttribute("message", "Đăng nhập thành công");
             return "redirect:/";
         }
@@ -52,7 +57,7 @@ public class AuthController {
     public String register(@RequestParam String fullName,
                            @RequestParam String email,
                            @RequestParam String password,
-                           HttpSession session,
+                           HttpServletResponse response,
                            RedirectAttributes ra) {
         if (userRepository.findByEmail(email).isPresent()) {
             ra.addFlashAttribute("message", "Email đã tồn tại");
@@ -67,16 +72,48 @@ public class AuthController {
                 .build();
         userRepository.save(newUser);
 
-        session.setAttribute("currentUser", newUser);
-        session.setAttribute("loggedUser", newUser);
+        issueTokenCookie(newUser, response);
         ra.addFlashAttribute("message", "Đăng ký thành công");
         return "redirect:/";
     }
 
     @GetMapping("/logout")
-    public String logout(HttpSession session, RedirectAttributes ra) {
+    public String logout(HttpSession session, HttpServletResponse response, RedirectAttributes ra) {
         session.invalidate();
+        clearTokenCookie(response);
         ra.addFlashAttribute("message", "Đăng xuất thành công");
         return "redirect:/";
+    }
+
+    /**
+     * Sinh JWT (chứa email làm subject + role) và gắn vào cookie HttpOnly.
+     * HttpOnly = true để JavaScript phía client không đọc được token (chống XSS
+     * đánh cắp token). Secure nên bật true khi deploy thật (chỉ gửi qua HTTPS);
+     * để false ở đây vì môi trường dev chạy http://localhost.
+     */
+    private void issueTokenCookie(User user, HttpServletResponse response) {
+        String token = jwtUtils.generateToken(user.getEmail(), user.getRole());
+
+        ResponseCookie cookie = ResponseCookie.from(JwtUtils.COOKIE_NAME, token)
+                .httpOnly(true)
+                .secure(false) // TODO: đổi thành true khi deploy production dùng HTTPS
+                .path("/")
+                .maxAge(jwtUtils.getExpirationSeconds())
+                .sameSite("Lax")
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
+
+    private void clearTokenCookie(HttpServletResponse response) {
+        ResponseCookie cookie = ResponseCookie.from(JwtUtils.COOKIE_NAME, "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 }

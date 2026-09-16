@@ -8,9 +8,14 @@ import lombok.*;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class WishList {
+
+    // Explicit constructor so javac can resolve line 28 without relying on Lombok
+    public WishList(Long id, User user, Product product) {
+        this.id = id;
+        this.user = user;
+        this.product = product;
+    }
 
     public static WishListBuilder builder() {
         return new WishListBuilder();
