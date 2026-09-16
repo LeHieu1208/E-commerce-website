@@ -34,13 +34,15 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final CartService cartService;
+    private final InventoryService inventoryService;
 
     @Value("${payment.webhook.secret:}")
     private String webhookSecret;
 
-    public OrderService(OrderRepository orderRepository, CartService cartService) {
+    public OrderService(OrderRepository orderRepository, CartService cartService, InventoryService inventoryService) {
         this.orderRepository = orderRepository;
         this.cartService = cartService;
+        this.inventoryService = inventoryService;
     }
 
     // ---------- Tạo đơn hàng từ giỏ hàng ----------
@@ -71,15 +73,31 @@ public class OrderService {
                 .build();
 
         BigDecimal subtotal = BigDecimal.ZERO;
-        for (CartItem cartItem : cartItems) {
-            BigDecimal itemPrice = cartItem.getProduct().getPrice();
-            OrderItem orderItem = OrderItem.builder()
-                    .product(cartItem.getProduct())
-                    .quantity(cartItem.getQuantity())
-                    .price(itemPrice)
-                    .build();
-            order.addItem(orderItem);
-            subtotal = subtotal.add(itemPrice.multiply(BigDecimal.valueOf(cartItem.getQuantity())));
+        // Theo dõi những sản phẩm đã trừ kho thành công, để hoàn lại nếu 1 sản
+        // phẩm khác trong giỏ hết hàng giữa chừng (compensating transaction -
+        // cần thiết vì InventoryService chạy REQUIRES_NEW nên mỗi lần trừ kho
+        // đã tự commit riêng, transaction cha rollback không tự cuốn theo nó).
+        List<CartItem> deductedSoFar = new java.util.ArrayList<>();
+
+        try {
+            for (CartItem cartItem : cartItems) {
+                inventoryService.deductStock(cartItem.getProduct().getId(), cartItem.getQuantity());
+                deductedSoFar.add(cartItem);
+
+                BigDecimal itemPrice = cartItem.getProduct().getPrice();
+                OrderItem orderItem = OrderItem.builder()
+                        .product(cartItem.getProduct())
+                        .quantity(cartItem.getQuantity())
+                        .price(itemPrice)
+                        .build();
+                order.addItem(orderItem);
+                subtotal = subtotal.add(itemPrice.multiply(BigDecimal.valueOf(cartItem.getQuantity())));
+            }
+        } catch (IllegalStateException ex) {
+            for (CartItem deducted : deductedSoFar) {
+                inventoryService.restoreStock(deducted.getProduct().getId(), deducted.getQuantity());
+            }
+            throw ex;
         }
 
         BigDecimal shippingFee = BigDecimal.ZERO; // hiện đang miễn phí ship, có thể tính theo địa chỉ sau này
