@@ -7,14 +7,16 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.hamcrest.Matchers.containsString;
+import org.springframework.test.context.ActiveProfiles;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@ActiveProfiles("test")
 @AutoConfigureMockMvc
 class HomeControllerTest {
 
@@ -25,16 +27,14 @@ class HomeControllerTest {
     void homePageShowsCategoriesAndProducts() throws Exception {
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Laptop")))
-                .andExpect(content().string(containsString("Laptop Apple M3 16GB 512GB")));
+            .andExpect(forwardedUrl("/index.html"));
     }
 
     @Test
     void productDetailPageShowsRatingForm() throws Exception {
         mockMvc.perform(get("/products/1"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Đánh giá sản phẩm")))
-                .andExpect(content().string(containsString("Gửi đánh giá")));
+            .andExpect(forwardedUrl("/index.html"));
     }
 
     @Test

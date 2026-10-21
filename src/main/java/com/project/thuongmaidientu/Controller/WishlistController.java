@@ -50,7 +50,7 @@ public class WishlistController {
         List<WishList> items = wishListRepository.findByUserId(user.getId());
         model.addAttribute("wishlistItems", items);
         model.addAttribute("currentUser", user);
-        return "wishlist";
+        return "forward:/index.html";
     }
 
     @PostMapping("/add")

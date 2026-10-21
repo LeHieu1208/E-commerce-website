@@ -51,7 +51,7 @@ public class CartController {
         model.addAttribute("cartSubtotal", subtotal);
         model.addAttribute("cartCount", cartService.getCount(session));
         model.addAttribute("currentUser", user);
-        return "cart";
+        return "forward:/index.html";
     }
 
     @PostMapping("/add")

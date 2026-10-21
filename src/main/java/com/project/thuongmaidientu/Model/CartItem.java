@@ -1,7 +1,6 @@
 package com.project.thuongmaidientu.Model;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;
 
 @Entity
 @Table(name = "cart_items",
@@ -59,11 +58,4 @@ public class CartItem {
     public void setProduct(Product product) { this.product = product; }
     public Integer getQuantity() { return quantity; }
     public void setQuantity(Integer quantity) { this.quantity = quantity; }
-
-    public BigDecimal getTotalPrice() {
-        if (product == null || product.getPrice() == null || quantity == null) {
-            return BigDecimal.ZERO;
-        }
-        return product.getPrice().multiply(BigDecimal.valueOf(quantity));
-    }
 }

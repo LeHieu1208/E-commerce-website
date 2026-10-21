@@ -1,0 +1,3 @@
+.site-footer .shell { min-height: 74px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.site-footer .wordmark { font-size: 19px; }
+.site-footer span { color: var(--muted); font-size: 12px; }

@@ -209,7 +209,7 @@ public class AdminController {
         model.addAttribute("recentOrders", allOrders.stream().limit(8).toList());
         model.addAttribute("totalProducts", productRepository.count());
 
-        return "admin-dashboard";
+        return "forward:/index.html";
     }
 
     // ================= Quản lý đơn hàng =================
@@ -248,7 +248,7 @@ public class AdminController {
         model.addAttribute("status", status);
         model.addAttribute("keyword", keyword);
         model.addAttribute("paymentMethod", paymentMethod);
-        return "admin-orders";
+        return "forward:/index.html";
     }
 
     @GetMapping("/orders/{id}")
@@ -269,7 +269,7 @@ public class AdminController {
         model.addAttribute("order", order);
         model.addAttribute("statusList", STATUS_ORDER);
         model.addAttribute("statusLabels", STATUS_LABELS);
-        return "admin-orders";
+        return "forward:/index.html";
     }
 
     @PostMapping("/orders/{id}/status")
@@ -361,7 +361,7 @@ public class AdminController {
         model.addAttribute("categories", categoryRepository.findAll());
         model.addAttribute("keyword", keyword);
         model.addAttribute("categoryId", categoryId);
-        return "admin-products";
+        return "forward:/index.html";
     }
 
     @GetMapping("/products/new")
@@ -376,7 +376,7 @@ public class AdminController {
         model.addAttribute("product", new Product());
         model.addAttribute("categories", categoryRepository.findAll());
         model.addAttribute("isEdit", false);
-        return "admin-products";
+        return "forward:/index.html";
     }
 
     @PostMapping("/products")
@@ -432,7 +432,7 @@ public class AdminController {
         model.addAttribute("product", product);
         model.addAttribute("categories", categoryRepository.findAll());
         model.addAttribute("isEdit", true);
-        return "admin-products";
+        return "forward:/index.html";
     }
 
     @PostMapping("/products/{id}")
@@ -618,7 +618,7 @@ public class AdminController {
         model.addAttribute("topProducts", topProducts);
         model.addAttribute("categoryBreakdown", categoryBreakdown);
 
-        return "admin-revenue";
+        return "forward:/index.html";
     }
 
     // ================= Quản lý danh mục =================
@@ -646,7 +646,7 @@ public class AdminController {
         model.addAttribute("productCount", productCount);
         model.addAttribute("category", new Category());
         model.addAttribute("isEdit", false);
-        return "admin-categories";
+        return "forward:/index.html";
     }
 
     @GetMapping("/categories/{id}/edit")
@@ -677,7 +677,7 @@ public class AdminController {
         model.addAttribute("productCount", productCount);
         model.addAttribute("category", category);
         model.addAttribute("isEdit", true);
-        return "admin-categories";
+        return "forward:/index.html";
     }
 
     @PostMapping("/categories")
@@ -754,7 +754,7 @@ public class AdminController {
         model.addAttribute("pageTitle", "Banner");
         model.addAttribute("banners", bannerRepository.findAllByOrderByIdAsc());
         model.addAttribute("categories", categoryRepository.findAll());
-        return "admin-banners";
+        return "forward:/index.html";
     }
 
     @GetMapping("/banners/new")
@@ -769,7 +769,7 @@ public class AdminController {
         model.addAttribute("banner", new Banner());
         model.addAttribute("categories", categoryRepository.findAll());
         model.addAttribute("isEdit", false);
-        return "admin-banners";
+        return "forward:/index.html";
     }
 
     @GetMapping("/banners/{id}/edit")
@@ -790,7 +790,7 @@ public class AdminController {
         model.addAttribute("banner", banner);
         model.addAttribute("categories", categoryRepository.findAll());
         model.addAttribute("isEdit", true);
-        return "admin-banners";
+        return "forward:/index.html";
     }
 
     @PostMapping("/banners")

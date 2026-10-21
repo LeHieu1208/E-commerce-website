@@ -34,7 +34,7 @@ public class AuthController {
             return "redirect:/";
         }
         model.addAttribute("mode", "register".equals(mode) ? "register" : "login");
-        return "auth";
+        return "forward:/index.html";
     }
 
     @PostMapping("/auth/login")

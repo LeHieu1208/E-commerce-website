@@ -43,6 +43,10 @@ public class SecurityConfig {
                         .requestMatchers("/", "/auth", "/auth/**", "/logout").permitAll()
                         // Duyệt sản phẩm công khai (không cần đăng nhập mới xem được)
                         .requestMatchers(HttpMethod.GET, "/products", "/products/search", "/products/{id}").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/catalog/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/catalog/products/*/rating").authenticated()
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/cart/**", "/api/wishlist/**", "/api/profile/**", "/api/checkout/**").authenticated()
                         // Webhook nhận thông báo chuyển khoản từ bên thứ 3 (Casso/SePay...)
                         // KHÔNG được yêu cầu JWT vì bên gọi không phải trình duyệt người dùng
                         .requestMatchers("/api/payment/webhook").permitAll()

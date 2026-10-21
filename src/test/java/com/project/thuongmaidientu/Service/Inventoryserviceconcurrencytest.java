@@ -4,7 +4,9 @@ import com.project.thuongmaidientu.Model.Category;
 import com.project.thuongmaidientu.Model.Product;
 import com.project.thuongmaidientu.Repository.CategoryRepository;
 import com.project.thuongmaidientu.Repository.ProductRepository;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,6 +17,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -28,7 +32,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * không dương thừa.
  */
 @SpringBootTest
+@ActiveProfiles("test")
 class InventoryServiceConcurrencyTest {
+
+    private static final String TEST_CATEGORY_NAME = "Danh mục test concurrency";
+    private static final String TEST_PRODUCT_NAME = "Sản phẩm giới hạn - test concurrency";
 
     @Autowired
     private InventoryService inventoryService;
@@ -39,23 +47,60 @@ class InventoryServiceConcurrencyTest {
     @Autowired
     private CategoryRepository categoryRepository;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     private Long productId;
     private static final int INITIAL_STOCK = 5;
     private static final int NUMBER_OF_CONCURRENT_BUYERS = 20;
 
     @BeforeEach
     void setUp() {
+        cleanupConcurrencyFixtures();
         Category category = categoryRepository.save(
-                Category.builder().name("Danh mục test concurrency").build());
+            Category.builder().name(TEST_CATEGORY_NAME).build());
 
         Product product = productRepository.save(Product.builder()
-                .name("Sản phẩm giới hạn - test concurrency")
+            .name(TEST_PRODUCT_NAME)
                 .price(BigDecimal.valueOf(100_000))
                 .stockQuantity(INITIAL_STOCK)
                 .category(category)
                 .build());
 
         productId = product.getId();
+    }
+
+    @AfterEach
+    void cleanUpAfterTest() {
+        cleanupConcurrencyFixtures();
+    }
+
+    private void cleanupConcurrencyFixtures() {
+        productRepository.findAll().stream()
+                .filter(product -> TEST_PRODUCT_NAME.equals(product.getName()))
+                .filter(product -> !isReferenced(product.getId()))
+                .forEach(product -> productRepository.deleteById(product.getId()));
+
+        categoryRepository.findAll().stream()
+                .filter(category -> TEST_CATEGORY_NAME.equals(category.getName()))
+                .filter(category -> productRepository.findAll().stream()
+                        .noneMatch(product -> product.getCategory() != null
+                                && category.getId().equals(product.getCategory().getId())))
+                .forEach(category -> categoryRepository.deleteById(category.getId()));
+    }
+
+    private boolean isReferenced(Long productId) {
+        return countReferences("order_items", productId) > 0
+                || countReferences("cart_items", productId) > 0
+                || countReferences("wishlists", productId) > 0
+                || countReferences("product_reviews", productId) > 0;
+    }
+
+    private long countReferences(String tableName, Long productId) {
+        return jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM " + tableName + " WHERE product_id = ?",
+                Long.class,
+                productId);
     }
 
     @Test

@@ -1,0 +1,48 @@
+@media (max-width: 920px) {
+  .header-content { gap: 18px; }
+  .account-link span { display: none; }
+  .header-user span { display: none; }
+  .product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 620px) {
+  .shell { width: min(100% - 28px, 1180px); }
+  .header-content { min-height: 64px; flex-wrap: wrap; gap: 12px; padding-block: 10px; }
+  .wordmark { font-size: 21px; }
+  .quick-links { gap: 10px; }
+  .search { display: none; }
+  .campaign { min-height: 0; grid-template-columns: 1fr; }
+  .campaign-copy { padding: 28px 23px 34px; }
+  .campaign h1 { font-size: 34px; }
+  .campaign-image { min-height: 170px; max-height: 210px; grid-row: 1; }
+  .campaign-fallback .campaign-copy { grid-row: 1; }
+  .campaign-art { display: none; }
+  .campaign-controls { left: 23px; }
+  .detail-layout { grid-template-columns: 1fr; gap: 24px; padding: 14px; }
+  .detail-visual { min-height: 260px; max-height: 340px; }
+  .detail-copy h1 { font-size: 27px; }
+  .auth-panel { padding: 22px; }
+  .cart-layout, .profile-layout { grid-template-columns: 1fr; }
+  .checkout-layout { grid-template-columns: 1fr; }
+  .admin-order-detail-grid { grid-template-columns: 1fr; }
+  .cart-item { flex-wrap: wrap; }
+  .cart-item-subtotal { width: auto; text-align: left; }
+  .page-label { display: none; }
+  .confirmation-panel { padding: 20px; }
+  .confirmation-panel h1 { font-size: 25px; }
+  .payment-box { grid-template-columns: 1fr; justify-items: center; }
+  .payment-box img { width: min(190px, 100%); }
+  .payment-box > div { width: 100%; }
+  .confirmation-actions { align-items: flex-start; flex-direction: column; gap: 13px; }
+  .section-heading { align-items: start; }
+  .section-heading h2 { font-size: 22px; }
+  .text-link { font-size: 11px; }
+  .category-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .category-item { min-height: 64px; padding: 8px; gap: 8px; font-size: 11px; }
+  .category-icon { width: 36px; height: 36px; }
+  .category-arrow { display: none; }
+  .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+  .product-visual { height: 145px; }
+  .product-details { padding: 10px; }
+  .add-button { font-size: 10px; }
+  .site-footer .shell { min-height: 65px; }
+}

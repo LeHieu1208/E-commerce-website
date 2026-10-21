@@ -34,7 +34,12 @@ public class HomeController {
         this.bannerRepository = bannerRepository;
     }
 
-    @GetMapping({"/", "/main"})
+    @GetMapping("/")
+    public String reactHome() {
+        return "forward:/index.html";
+    }
+
+    @GetMapping("/main")
     public String home(Model model, HttpSession session) {
         User currentUser = getCurrentUser(session);
         List<Category> categories = categoryRepository.findAll();
@@ -59,7 +64,7 @@ public class HomeController {
         model.addAttribute("cartCount", cartService.getCount(session));
         model.addAttribute("currentUser", currentUser);
         model.addAttribute("banners", bannerRepository.findAllByOrderByIdAsc());
-        return "main";
+        return "forward:/index.html";
     }
 
     private User getCurrentUser(HttpSession session) {

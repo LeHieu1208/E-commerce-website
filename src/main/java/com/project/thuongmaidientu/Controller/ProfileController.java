@@ -44,7 +44,7 @@ public class ProfileController {
 
         model.addAttribute("user", userRepository.findById(user.getId()).orElse(user));
         model.addAttribute("orders", orderService.findOrdersOfUser(user));
-        return "profile";
+        return "forward:/index.html";
     }
 
     @PostMapping("/profile")

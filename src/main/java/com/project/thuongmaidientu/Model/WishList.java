@@ -7,7 +7,7 @@ import lombok.*;
 @Table(name = "wishlists")
 @Getter
 @Setter
-@NoArgsConstructor
+
 public class WishList {
 
     // Explicit constructor so javac can resolve line 28 without relying on Lombok
@@ -46,4 +46,13 @@ public class WishList {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
+
+    public WishList() { }
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
+    public Product getProduct() { return product; }
+    public void setProduct(Product product) { this.product = product; }
 }

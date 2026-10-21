@@ -46,7 +46,7 @@ public class ProductController {
                         @RequestParam(required = false) String keyword,
                         Model model, HttpSession session) {
         List<Product> products = productRepository.findAll();
-        var selectedCategory = categoryRepository.findById(categoryId).orElse(null);
+        var selectedCategory = categoryId == null ? null : categoryRepository.findById(categoryId).orElse(null);
 
         if (categoryId != null) {
             products = products.stream()
@@ -70,7 +70,7 @@ public class ProductController {
         model.addAttribute("cartSubtotal", cartService.getSubtotal(session));
         model.addAttribute("cartCount", cartService.getCount(session));
         model.addAttribute("currentUser", getCurrentUser(session));
-        return "product";
+        return "forward:/index.html";
     }
 
     @GetMapping("/products/search")
@@ -101,7 +101,7 @@ public class ProductController {
         model.addAttribute("cartCount", cartService.getCount(session));
         model.addAttribute("currentUser", currentUser);
         model.addAttribute("myReview", myReview);
-        return "product-detail";
+        return "forward:/index.html";
     }
 
     @PostMapping("/products/{id}/rate")

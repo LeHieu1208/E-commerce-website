@@ -72,7 +72,7 @@ public class CheckoutController {
         model.addAttribute("prefillPhone", user.getPhone());
         model.addAttribute("prefillAddress", user.getAddress());
 
-        return "checkout";
+        return "forward:/index.html";
     }
 
     // ---------- Xử lý đặt hàng ----------
@@ -139,7 +139,7 @@ public class CheckoutController {
         model.addAttribute("bankAccountNo", orderService.getBankAccountNo());
         model.addAttribute("bankAccountName", orderService.getBankAccountName());
 
-        return "payment-pending";
+        return "forward:/index.html";
     }
 
     // ---------- Trang xác nhận sau khi đặt hàng ----------
@@ -162,6 +162,6 @@ public class CheckoutController {
         model.addAttribute("order", order);
         model.addAttribute("cartCount", cartService.getCount(session));
 
-        return "order-success";
+        return "forward:/index.html";
     }
 }
