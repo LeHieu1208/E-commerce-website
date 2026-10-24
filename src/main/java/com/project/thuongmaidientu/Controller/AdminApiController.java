@@ -25,6 +25,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
+import com.project.thuongmaidientu.Service.OrderService;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -46,11 +48,14 @@ public class AdminApiController {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final BannerRepository bannerRepository;
+    private final OrderService orderService;
 
     public AdminApiController(OrderRepository orderRepository,
                               ProductRepository productRepository,
                               CategoryRepository categoryRepository,
-                              BannerRepository bannerRepository) {
+                              BannerRepository bannerRepository,
+                              OrderService orderService) {
+        this.orderService = orderService;
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
@@ -205,32 +210,18 @@ public class AdminApiController {
 
     @PatchMapping("/orders/{id}")
     public ResponseEntity<?> updateOrder(@PathVariable Long id, @RequestBody OrderUpdate request) {
-        Order order = orderRepository.findById(id).orElse(null);
-        if (order == null) return ResponseEntity.notFound().build();
-        if (!STATUSES.contains(request.newStatus())) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Trạng thái đơn hàng không hợp lệ."));
+        try {
+            // Máy trạng thái + hoàn kho khi hủy nằm trong OrderService (một transaction, có khóa dòng)
+            Order order = orderService.updateStatus(id, request.newStatus(), request.trackingCode(),
+                    request.adminNote(), request.cancelReason());
+            return ResponseEntity.ok(toOrder(order));
+        } catch (java.util.NoSuchElementException ex) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(new MessageResponse(ex.getMessage()));
+        } catch (IllegalStateException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(new MessageResponse(ex.getMessage()));
         }
-        order.setStatus(request.newStatus());
-        if (request.trackingCode() != null && !request.trackingCode().isBlank()) order.setTrackingCode(request.trackingCode().trim());
-        if (request.adminNote() != null) order.setAdminNote(request.adminNote());
-        LocalDateTime now = LocalDateTime.now();
-        switch (request.newStatus()) {
-            case "DA_XAC_NHAN" -> { if (order.getConfirmedAt() == null) order.setConfirmedAt(now); }
-            case "DANG_GIAO" -> { if (order.getShippedAt() == null) order.setShippedAt(now); }
-            case "HOAN_THANH" -> {
-                if (order.getCompletedAt() == null) order.setCompletedAt(now);
-                if ("COD".equals(order.getPaymentMethod()) && !Boolean.TRUE.equals(order.getPaid())) {
-                    order.setPaid(true);
-                    order.setPaidAt(now);
-                }
-            }
-            case "DA_HUY" -> {
-                order.setCancelledAt(now);
-                if (request.cancelReason() != null && !request.cancelReason().isBlank()) order.setCancelReason(request.cancelReason().trim());
-            }
-            default -> { }
-        }
-        return ResponseEntity.ok(toOrder(orderRepository.save(order)));
     }
 
     @GetMapping("/revenue")

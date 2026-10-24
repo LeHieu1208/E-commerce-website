@@ -5,13 +5,36 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import javax.crypto.SecretKey;
+import java.security.SecureRandom;
 import java.util.Date;
+import java.util.HexFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class JwtUtils {
-    private final String JWT_SECRET = "9a2f8c4e1b7d3f6a8c0e2b4d6f8a1c3e5b7d9f0a2b4c6e8f1a3b5c7d9e0f2a4b"; // Chuỗi secret đủ dài (>= 256 bits)
+    private static final Logger log = LoggerFactory.getLogger(JwtUtils.class);
+
+    private final String JWT_SECRET;
     private final long JWT_EXPIRATION = 86400000L; // 24 giờ
+
+    /**
+     * Secret đọc từ app.jwt.secret (biến môi trường JWT_SECRET), tối thiểu 32 ký tự.
+     * Không có thì sinh khóa ngẫu nhiên cho lần chạy này (token cũ mất hiệu lực khi restart)
+     * thay vì dùng khóa cứng nằm trong mã nguồn.
+     */
+    public JwtUtils(@Value("${app.jwt.secret:}") String configuredSecret) {
+        if (configuredSecret == null || configuredSecret.length() < 32) {
+            byte[] random = new byte[48];
+            new SecureRandom().nextBytes(random);
+            this.JWT_SECRET = HexFormat.of().formatHex(random);
+            log.warn("JWT_SECRET chưa cấu hình (hoặc < 32 ký tự): dùng khóa ngẫu nhiên tạm thời, người dùng sẽ phải đăng nhập lại sau mỗi lần khởi động.");
+        } else {
+            this.JWT_SECRET = configuredSecret;
+        }
+    }
 
     /** Tên cookie chứa JWT - dùng chung giữa JwtFilter và AuthController. */
     public static final String COOKIE_NAME = "ACCESS_TOKEN";
@@ -48,7 +71,7 @@ public class JwtUtils {
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             // Token không hợp lệ, hết hạn hoặc bị thay đổi
-            System.err.println("JWT Validation Error: " + e.getMessage());
+            log.debug("JWT không hợp lệ: {}", e.getMessage());
         }
         return false;
     }

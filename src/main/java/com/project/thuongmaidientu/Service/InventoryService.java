@@ -47,6 +47,20 @@ public class InventoryService {
     }
 
     /**
+     * Hoàn kho trong CHÍNH transaction của người gọi (REQUIRED, không tách riêng).
+     * Dùng khi hủy đơn: việc đổi trạng thái đơn và việc cộng lại kho phải cùng
+     * commit hoặc cùng rollback, nếu không có thể hoàn kho 2 lần hoặc không lần nào.
+     */
+    @Transactional
+    public void restoreStockInCurrentTransaction(Long productId, int quantity) {
+        Product product = productRepository.findByIdForUpdate(productId)
+                .orElseThrow(() -> new IllegalStateException("Sản phẩm không còn tồn tại"));
+        int currentStock = product.getStockQuantity() != null ? product.getStockQuantity() : 0;
+        product.setStockQuantity(currentStock + quantity);
+        productRepository.save(product);
+    }
+
+    /**
      * Hoàn kho - dùng khi hủy đơn, hoặc khi 1 sản phẩm khác trong cùng đơn
      * hàng bị hết hàng giữa chừng (compensating transaction, xem OrderService).
      */

@@ -2,7 +2,7 @@
 .campaign.banner-slider { min-height: 0; margin: 24px 0; grid-template-columns: 1fr; }
 .campaign-copy { z-index: 1; align-self: center; padding: 36px 40px; }
 .eyebrow { display: block; margin-bottom: 9px; color: var(--text-secondary); font-size: 10px; font-weight: 800; letter-spacing: 1px; }
-.campaign h1 { max-width: 460px; margin: 0 0 8px; color: var(--coral-dark); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 26px; font-weight: 700; line-height: 1.25; }
+.campaign h1 { max-width: 460px; margin: 0 0 8px; color: var(--coral-dark); font-family: var(--font-body); font-size: 26px; font-weight: 700; line-height: 1.25; }
 .campaign p { max-width: 420px; margin: 0 0 18px; color: var(--text-secondary); font-size: 14px; }
 .primary-link { width: fit-content; min-height: 42px; padding: 0 16px; display: inline-flex; align-items: center; gap: 10px; border-radius: 3px; background: var(--coral); color: white; font-size: 13px; font-weight: 700; transition: background .16s ease, transform .16s ease; }
 .primary-link:hover { background: #a93e2c; transform: translateY(-1px); }
@@ -24,7 +24,7 @@
 .category-section, .catalog-section { margin-top: 42px; }
 .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 17px; }
 .section-heading .eyebrow { margin-bottom: 3px; }
-.section-heading h2 { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; font-size: 18px; font-weight: 700; }
+.section-heading h2 { margin: 0; font-family: var(--font-body); font-size: 18px; font-weight: 700; }
 .text-link { display: inline-flex; align-items: center; gap: 7px; color: var(--green); font-size: 12px; font-weight: 700; white-space: nowrap; }
 .category-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
 .category-section .category-list { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px; margin-bottom: 32px; }

@@ -10,6 +10,7 @@ import com.project.thuongmaidientu.Repository.BannerRepository;
 import com.project.thuongmaidientu.Repository.CategoryRepository;
 import com.project.thuongmaidientu.Repository.OrderRepository;
 import com.project.thuongmaidientu.Repository.ProductRepository;
+import com.project.thuongmaidientu.Service.OrderService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
@@ -56,11 +57,14 @@ public class AdminController {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final BannerRepository bannerRepository;
+    private final OrderService orderService;
 
     public AdminController(OrderRepository orderRepository,
                             ProductRepository productRepository,
                             CategoryRepository categoryRepository,
-                            BannerRepository bannerRepository) {
+                            BannerRepository bannerRepository,
+                            OrderService orderService) {
+        this.orderService = orderService;
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
@@ -296,36 +300,13 @@ public class AdminController {
             return "redirect:/admin/orders/" + id;
         }
 
-        order.setStatus(newStatus);
-        if (trackingCode != null && !trackingCode.isBlank()) {
-            order.setTrackingCode(trackingCode.trim());
-        }
-        if (adminNote != null) {
-            order.setAdminNote(adminNote);
-        }
-
-        LocalDateTime now = LocalDateTime.now();
-        switch (newStatus) {
-            case "DA_XAC_NHAN" -> { if (order.getConfirmedAt() == null) order.setConfirmedAt(now); }
-            case "DANG_GIAO" -> { if (order.getShippedAt() == null) order.setShippedAt(now); }
-            case "HOAN_THANH" -> {
-                if (order.getCompletedAt() == null) order.setCompletedAt(now);
-                // Đơn COD hoàn thành coi như đã thu tiền
-                if ("COD".equals(order.getPaymentMethod()) && !Boolean.TRUE.equals(order.getPaid())) {
-                    order.setPaid(true);
-                    order.setPaidAt(now);
-                }
-            }
-            case "DA_HUY" -> {
-                order.setCancelledAt(now);
-                if (cancelReason != null && !cancelReason.isBlank()) {
-                    order.setCancelReason(cancelReason.trim());
-                }
-            }
-            default -> { }
+        try {
+            order = orderService.updateStatus(id, newStatus, trackingCode, adminNote, cancelReason);
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            ra.addFlashAttribute("message", ex.getMessage());
+            return "redirect:/admin/orders/" + id;
         }
 
-        orderRepository.save(order);
         ra.addFlashAttribute("message", "Đã cập nhật trạng thái đơn hàng " + order.getOrderCode());
         return "redirect:/admin/orders/" + id;
     }

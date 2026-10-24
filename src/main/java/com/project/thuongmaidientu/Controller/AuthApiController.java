@@ -3,7 +3,10 @@ package com.project.thuongmaidientu.Controller;
 import com.project.thuongmaidientu.Model.User;
 import com.project.thuongmaidientu.Repository.UserRepository;
 import com.project.thuongmaidientu.Security.JwtUtils;
+import com.project.thuongmaidientu.Security.LoginRateLimiter;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -24,8 +27,15 @@ public class AuthApiController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
+    private final LoginRateLimiter loginRateLimiter;
 
-    public AuthApiController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
+    /** Đặt COOKIE_SECURE=true khi chạy sau HTTPS. */
+    @Value("${app.cookie.secure:false}")
+    private boolean cookieSecure;
+
+    public AuthApiController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils,
+                             LoginRateLimiter loginRateLimiter) {
+        this.loginRateLimiter = loginRateLimiter;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
@@ -34,11 +44,18 @@ public class AuthApiController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request,
                                    HttpServletResponse response,
-                                   HttpSession session) {
-        User user = userRepository.findByEmail(request.email()).orElse(null);
-        if (user == null || !passwordEncoder.matches(request.password(), user.getPassword())) {
+                                   HttpSession session,
+                                   HttpServletRequest httpRequest) {
+        String limiterKey = String.valueOf(request.email()).toLowerCase() + "|" + httpRequest.getRemoteAddr();
+        if (loginRateLimiter.isBlocked(limiterKey)) {
+            return ResponseEntity.status(429).body(Map.of("message", "Đăng nhập sai quá nhiều lần, vui lòng thử lại sau 15 phút"));
+        }
+        User user = request.email() == null ? null : userRepository.findByEmail(request.email()).orElse(null);
+        if (user == null || request.password() == null || !passwordEncoder.matches(request.password(), user.getPassword())) {
+            loginRateLimiter.recordFailure(limiterKey);
             return ResponseEntity.status(401).body(Map.of("message", "Email hoặc mật khẩu không đúng"));
         }
+        loginRateLimiter.reset(limiterKey);
 
         issueTokenCookie(user, response);
         session.setAttribute("currentUser", user);
@@ -84,7 +101,7 @@ public class AuthApiController {
     public ResponseEntity<Void> logout(HttpSession session, HttpServletResponse response) {
         session.invalidate();
         ResponseCookie cookie = ResponseCookie.from(JwtUtils.COOKIE_NAME, "")
-                .httpOnly(true).secure(false).path("/").maxAge(0).sameSite("Lax").build();
+                .httpOnly(true).secure(cookieSecure).path("/").maxAge(0).sameSite("Lax").build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         return ResponseEntity.noContent().build();
     }
@@ -103,7 +120,7 @@ public class AuthApiController {
     private void issueTokenCookie(User user, HttpServletResponse response) {
         String token = jwtUtils.generateToken(user.getEmail(), user.getRole());
         ResponseCookie cookie = ResponseCookie.from(JwtUtils.COOKIE_NAME, token)
-                .httpOnly(true).secure(false).path("/")
+                .httpOnly(true).secure(cookieSecure).path("/")
                 .maxAge(jwtUtils.getExpirationSeconds()).sameSite("Lax").build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }

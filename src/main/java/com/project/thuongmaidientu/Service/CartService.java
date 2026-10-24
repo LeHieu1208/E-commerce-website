@@ -192,7 +192,7 @@ public class CartService {
     @Transactional
     public BigDecimal getSubtotal(HttpSession session) {
         return getItems(session).stream()
-                .map(item -> item.getProduct().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .map(item -> item.getProduct().getDiscountedPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 

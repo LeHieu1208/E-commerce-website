@@ -110,7 +110,7 @@ public class PaymentWebhookController {
         if (v == null) return null;
         try {
             if (v instanceof Number number) {
-                return BigDecimal.valueOf(number.doubleValue());
+                return new BigDecimal(number.toString());
             }
             return new BigDecimal(v.toString().replaceAll("[^0-9.]", ""));
         } catch (NumberFormatException e) {

@@ -140,12 +140,12 @@ public class CustomerApiController {
 
     private static CartLine toCartLine(CartItem item) {
         Product product = item.getProduct();
-        return new CartLine(product.getId(), product.getName(), product.getImageUrl(), product.getPrice(),
+        return new CartLine(product.getId(), product.getName(), product.getImageUrl(), product.getDiscountedPrice(),
                 item.getQuantity(), product.getStockQuantity());
     }
 
     private static WishProduct toWishProduct(Product product) {
-        return new WishProduct(product.getId(), product.getName(), product.getDescription(), product.getImageUrl(), product.getPrice());
+        return new WishProduct(product.getId(), product.getName(), product.getDescription(), product.getImageUrl(), product.getDiscountedPrice());
     }
 
     private static OrderSummary toOrderSummary(Order order) {

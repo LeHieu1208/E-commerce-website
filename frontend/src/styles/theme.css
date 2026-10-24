@@ -1,0 +1,113 @@
+/* Shopmart theme — lớp ghi đè thuần CSS, nạp cuối cùng trong main.jsx. Không đổi JSX/logic. */
+:root {
+  --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Bricolage Grotesque', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --ink: #0e1116;
+  --text-primary: #0e1116;
+  --text-secondary: #566070;
+  --muted: #8a93a0;
+  --line: #e3e6ea;
+  --border-strong: #cfd4db;
+  --paper: #fff;
+  --surface-0: #f1f3f5;
+  --green: #0b6e5e;
+  --coral: #0b6e5e;
+  --coral-light: #e2f0ec;
+  --coral-dark: #06332c;
+  --amber: #e0a526;
+  --radius: 12px;
+  --shadow-lift: 0 18px 40px -18px rgba(14, 17, 22, .28);
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: #f5f6f4;
+}
+body { background: #f5f6f4; font-family: var(--font-body); }
+button, input, select, textarea { font-family: inherit; }
+h1, h2, h3, .campaign h1, .section-heading h2, .campaign-fallback h1 { font-family: var(--font-display); letter-spacing: -.025em; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid var(--green); outline-offset: 3px; }
+input, select, textarea { border-radius: 10px; border-color: var(--border-strong); }
+input:focus, select:focus, textarea:focus { border-color: var(--green); }
+
+.shell { width: min(1240px, calc(100% - 48px)); }
+
+/* Header */
+.site-header { background: rgba(255, 255, 255, .86); backdrop-filter: saturate(1.4) blur(14px); border-bottom: 1px solid var(--line); }
+.header-content { min-height: 72px; gap: 28px; }
+.wordmark { font-family: var(--font-display); font-size: 25px; font-weight: 800; letter-spacing: -.05em; color: var(--ink); }
+.wordmark::after { content: ""; display: inline-block; width: 8px; height: 8px; margin-left: 3px; border-radius: 50%; background: var(--green); }
+.quick-links { gap: 6px; }
+.icon-link, .account-link { border-radius: 999px; transition: background .18s ease, color .18s ease; }
+.icon-link:hover, .account-link:hover { background: var(--surface-0); color: var(--green); }
+.site-header .cart-link { position: relative; }
+.site-header .quick-links .count { position: absolute; top: -3px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; display: grid; place-items: center; border-radius: 9px; background: var(--green); color: #fff; font-size: 10px; font-weight: 800; }
+
+/* Hero */
+.campaign { border-radius: 28px; background: var(--ink); color: #fff; min-height: 340px; }
+.campaign-copy, .campaign-fallback .campaign-copy { padding: 56px 56px; }
+.campaign h1, .campaign-fallback h1, .campaign.campaign-fallback h1 { max-width: 560px; color: #fff; font-size: clamp(30px, 4.2vw, 54px); font-weight: 800; line-height: 1.04; }
+.campaign p { color: #b9c1cc; font-size: 16px; max-width: 480px; }
+.campaign .eyebrow { color: #7fd6c4; }
+.campaign-fallback { background: radial-gradient(120% 140% at 100% 0%, #0f3b34 0%, var(--ink) 60%); }
+.campaign-art { color: #7fd6c4; font-size: 120px; opacity: .9; margin-right: 64px; }
+.banner-slider .campaign-image img { height: 360px; }
+.campaign-controls button.active { background: var(--green); }
+.banner-slider .campaign-controls button.active { background: #fff; }
+.primary-link { min-height: 46px; padding: 0 22px; border-radius: 999px; background: var(--green); font-weight: 700; }
+.primary-link:hover { background: #095a4d; transform: translateY(-2px); }
+.campaign .primary-link { background: #fff; color: var(--ink); }
+.campaign .primary-link:hover { background: #7fd6c4; }
+
+/* Sections & categories */
+.category-section, .catalog-section { margin-top: 56px; }
+.section-heading h2 { font-size: 28px; font-weight: 800; }
+.eyebrow { color: var(--green); letter-spacing: .14em; text-transform: uppercase; }
+.text-link { color: var(--ink); border-bottom: 1px solid var(--ink); padding-bottom: 1px; }
+.text-link:hover { color: var(--green); border-color: var(--green); }
+.category-item { border-radius: 18px; border: 1px solid var(--line); background: var(--paper); transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
+.category-item:hover { border-color: var(--ink); transform: translateY(-3px); box-shadow: var(--shadow-lift); }
+.category-icon, .category-icon.tone-1, .category-icon.tone-2, .category-icon.tone-3 { background: var(--surface-0); color: var(--ink); border-radius: 14px; }
+.category-section .category-item > .ti { color: var(--ink); }
+
+/* Product cards */
+.product-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+.product-card { border: 1px solid var(--line); border-radius: 20px; background: var(--paper); animation: rise .55s cubic-bezier(.2, .7, .2, 1) both; }
+.product-card:nth-child(2) { animation-delay: .05s; } .product-card:nth-child(3) { animation-delay: .1s; }
+.product-card:nth-child(4) { animation-delay: .15s; } .product-card:nth-child(n+5) { animation-delay: .2s; }
+.product-card:hover { transform: translateY(-5px); border-color: var(--border-strong); box-shadow: var(--shadow-lift); }
+.product-visual { height: 200px; margin: 8px 8px 0; border-radius: 14px; background: var(--surface-0); }
+.product-visual img { object-fit: contain; padding: 14px; mix-blend-mode: multiply; }
+.product-placeholder { font-size: 54px; color: var(--border-strong); }
+.discount { top: 12px; left: 12px; padding: 5px 10px; border-radius: 999px; background: var(--ink); color: #fff; font-size: 11px; letter-spacing: .02em; }
+.product-details { padding: 14px 16px 16px; }
+.product-name { font-weight: 700; font-size: 14px; line-height: 1.35; }
+.product-name:hover { color: var(--green); }
+.price-line strong { color: var(--ink); font-family: var(--font-display); font-size: 20px; font-weight: 800; letter-spacing: -.02em; }
+.price-line del { color: var(--muted); font-size: 12px; }
+.rating { color: var(--text-secondary); font-size: 12px; }
+.rating .ti { color: var(--amber); }
+.add-button { height: 40px; border: 0; border-radius: 999px; background: var(--ink); color: #fff; font-size: 12px; transition: background .18s ease, transform .18s ease; }
+.add-button:hover { background: var(--green); border-color: var(--green); transform: translateY(-1px); }
+.add-button:active, .primary-link:active { transform: scale(.97); }
+.wish-button { width: 40px; height: 40px; border-radius: 50%; background: var(--paper); color: var(--ink); }
+.wish-button:hover { background: var(--ink); border-color: var(--ink); color: #fff; }
+.detail-button { border-radius: 999px; }
+.product-feedback { color: var(--green); font-weight: 600; }
+
+/* Panels, tables, status */
+.panel, .checkout-panel, .order-card, .admin-panel, .table-panel, .metric, .wishlist-card, .success-card { border-radius: 20px; border-color: var(--line); }
+.status-pill { border-radius: 999px; font-weight: 700; }
+.search-results { border-radius: 16px; box-shadow: var(--shadow-lift); }
+
+/* Footer */
+.site-footer { margin-top: 80px; border: 0; background: var(--ink); }
+.site-footer .wordmark { color: #fff; }
+.site-footer span, .site-footer a { color: #8f98a5; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+@media (max-width: 720px) {
+  .campaign-copy, .campaign-fallback .campaign-copy { padding: 36px 26px; }
+  .campaign-art { display: none; }
+  .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .product-visual { height: 150px; }
+}

@@ -80,7 +80,7 @@ public class CheckoutApiController {
 
     private static CheckoutLine toCheckoutLine(CartItem item) {
         Product product = item.getProduct();
-        return new CheckoutLine(product.getId(), product.getName(), product.getImageUrl(), product.getPrice(), item.getQuantity());
+        return new CheckoutLine(product.getId(), product.getName(), product.getImageUrl(), product.getDiscountedPrice(), item.getQuantity());
     }
 
     private static OrderLine toOrderLine(OrderItem item) {

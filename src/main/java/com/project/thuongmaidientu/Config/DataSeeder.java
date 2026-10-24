@@ -19,7 +19,9 @@ public class DataSeeder {
             CategoryRepository categoryRepository,
             ProductRepository productRepository,
             BannerRepository bannerRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            @org.springframework.beans.factory.annotation.Value("${app.seed.admin-password:admin123}") String adminPassword,
+            @org.springframework.beans.factory.annotation.Value("${app.seed.user-password:123456}") String userPassword
     ) {
         return args -> {
             // Seed Users nếu chưa có
@@ -27,14 +29,14 @@ public class DataSeeder {
                 User admin = User.builder()
                         .fullName("admin")
                         .email("admin@gmail.com")
-                        .password(passwordEncoder.encode("admin123"))
+                        .password(passwordEncoder.encode(adminPassword))
                         .role("ROLE_ADMIN")
                         .build();
 
                 User customer = User.builder()
                         .fullName("user")
                         .email("user@gmail.com")
-                        .password(passwordEncoder.encode("123456"))
+                        .password(passwordEncoder.encode(userPassword))
                         .role("ROLE_USER")
                         .build();
 
